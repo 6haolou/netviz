@@ -193,11 +193,13 @@ export default function Home() {
                   }}
                   onMouseEnter={(e) => {
                     setIsOsiHover(true);
+                    setIsOsiOpen(true);  // 鼠标悬停时自动展开
                     e.currentTarget.style.backgroundColor = primaryBlue;
                     e.currentTarget.style.color = '#ffffff';
                   }}
                   onMouseLeave={(e) => {
                     setIsOsiHover(false);
+                    setIsOsiOpen(false);  // 鼠标移开时自动关闭
                     e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
                     e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
                   }}
