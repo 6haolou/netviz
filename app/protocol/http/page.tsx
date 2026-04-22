@@ -19,6 +19,8 @@ interface StepInfo {
   icon: React.ReactNode;
   title: string;
   description: string;
+  clientStatus: string;
+  serverStatus: string;
   packets: { from: number; to: number; type: string; delay: number }[];
 }
 
@@ -46,43 +48,53 @@ export default function HTTPPage() {
   const steps: StepInfo[] = [
     {
       phase: '初始状态',
-      icon: <Emoji label="📍" />,
+      icon: <Emoji label="[ ]" />,
       title: 'HTTP 请求前',
-      description: '客户端准备向服务器发送HTTP请求，获取网页内容。',
+      description: '客户端准备向服务器发送 HTTP 请求，获取网页内容。此时双方还未建立连接。',
+      clientStatus: 'IDLE',
+      serverStatus: 'LISTEN',
       packets: [],
     },
     {
       phase: '建立连接',
-      icon: <Emoji label="🔌" />,
-      title: 'TCP 连接建立',
-      description: '客户端与服务端通过三次握手建立TCP连接，确保数据传输的可靠性。',
-      packets: [{ from: 0, to: 1, type: 'TCP', delay: 0 }],
+      icon: <Emoji label="TCP" />,
+      title: '第一次握手：TCP 连接建立',
+      description: '客户端与服务端通过 TCP 三次握手建立连接。客户端发送 SYN 报文，进入 SYN_SENT 状态。',
+      clientStatus: 'SYN_SENT',
+      serverStatus: 'LISTEN',
+      packets: [{ from: 0, to: 1, type: 'SYN', delay: 0 }],
     },
     {
       phase: '发送请求',
-      icon: <Emoji label="📤" />,
-      title: 'HTTP GET 请求',
-      description: '客户端发送HTTP GET请求，请求获取/index.html页面内容。',
+      icon: <Emoji label="GET" />,
+      title: '第二次握手：发送 HTTP GET 请求',
+      description: 'TCP 连接建立后，客户端发送 HTTP GET 请求，请求获取/index.html 页面内容。',
+      clientStatus: 'ESTABLISHED',
+      serverStatus: 'ESTABLISHED',
       packets: [{ from: 0, to: 1, type: 'GET', delay: 0 }],
     },
     {
       phase: '返回响应',
-      icon: <Emoji label="📥" />,
-      title: 'HTTP 200 OK',
-      description: '服务器返回200 OK状态码，以及请求的HTML页面内容。',
+      icon: <Emoji label="200" />,
+      title: '第三次握手：服务器返回响应',
+      description: '服务器收到 GET 请求后，返回 200 OK 状态码，以及请求的 HTML 页面内容。',
+      clientStatus: 'ESTABLISHED',
+      serverStatus: 'ESTABLISHED',
       packets: [{ from: 1, to: 0, type: '200 OK', delay: 0 }],
     },
     {
       phase: '完成',
-      icon: <Emoji label="✅" />,
+      icon: <Emoji label="[OK]" />,
       title: 'HTTP 请求完成',
-      description: '客户端收到响应，HTTP请求-响应周期完成。',
+      description: '客户端收到响应，HTTP 请求 - 响应周期完成。连接可以保持或关闭。',
+      clientStatus: 'CLOSED',
+      serverStatus: 'CLOSED',
       packets: [],
     },
   ];
 
   const packetColors: Record<string, { start: string; end: string }> = {
-    'TCP': { start: '#6b7280', end: '#4b5563' },
+    'SYN': { start: '#6b7280', end: '#4b5563' },
     'GET': { start: '#3b82f6', end: '#2563eb' },
     '200 OK': { start: '#10b981', end: '#059669' },
   };
@@ -174,9 +186,9 @@ export default function HTTPPage() {
       context.stroke();
       context.setLineDash([]);
 
-      const drawNode = (x: number, y: number, label: string, sublabel: string, isActive: boolean) => {
+      const drawNode = (x: number, y: number, label: string, sublabel: string, isActive: boolean, status?: string, isClient?: boolean) => {
         const pulse = Math.sin(timeRef.current * 3) * 4;
-        const color = primaryBlue;
+        const color = isClient ? '#3b82f6' : '#8b5cf6';
 
         if (isActive) {
           const glowGradient = context.createRadialGradient(x, y, 40, x, y, 80 + pulse);
@@ -192,14 +204,31 @@ export default function HTTPPage() {
         nodeGradient.addColorStop(0, color);
         nodeGradient.addColorStop(1, color + 'cc');
         context.fillStyle = nodeGradient;
-        context.beginPath();
-        context.roundRect(x - 50, y - 50, 100, 100, 12);
-        context.fill();
-
-        context.fillStyle = 'rgba(255, 255, 255, 0.2)';
-        context.fillRect(x - 40, y - 30, 80, 5);
-        context.fillRect(x - 40, y - 20, 80, 5);
-        context.fillRect(x - 40, y - 10, 80, 5);
+        
+        if (isClient) {
+          context.beginPath();
+          context.roundRect(x - 50, y - 50, 100, 100, 12);
+          context.fill();
+          
+          context.fillStyle = 'white';
+          context.fillRect(x - 35, y - 30, 70, 45);
+          context.fillRect(x - 20, y + 15, 40, 8);
+          context.fillRect(x - 30, y + 23, 60, 6);
+        } else {
+          context.beginPath();
+          context.ellipse(x, y - 35, 50, 15, 0, 0, Math.PI * 2);
+          context.fill();
+          context.fillRect(x - 50, y - 35, 100, 70);
+          context.beginPath();
+          context.ellipse(x, y + 35, 50, 15, 0, 0, Math.PI * 2);
+          context.fill();
+          
+          context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+          context.fillRect(x - 40, y - 20, 80, 4);
+          context.fillRect(x - 40, y - 10, 80, 4);
+          context.fillRect(x - 40, y, 80, 4);
+          context.fillRect(x - 40, y + 10, 80, 4);
+        }
 
         context.fillStyle = 'white';
         context.font = 'bold 16px Inter, system-ui, sans-serif';
@@ -209,12 +238,20 @@ export default function HTTPPage() {
         context.fillStyle = secondaryText;
         context.font = '12px Inter, system-ui, sans-serif';
         context.fillText(sublabel, x, y + 100);
+
+        if (status) {
+          context.fillStyle = '#10b981';
+          context.font = 'bold 11px Inter, system-ui, sans-serif';
+          context.fillText(status, x, y + 120);
+        }
       };
 
-      const isClientActive = currentStep >= 2;
-      const isServerActive = currentStep >= 3;
-      drawNode(clientX, centerY, '客户端', 'Client', isClientActive);
-      drawNode(serverX, centerY, '服务器', 'Server', isServerActive);
+      const isClientActive = currentStep >= 1 && currentStep <= 3;
+      const isServerActive = currentStep >= 1 && currentStep <= 3;
+      const clientStatus = steps[currentStep].clientStatus;
+      const serverStatus = steps[currentStep].serverStatus;
+      drawNode(clientX, centerY, '客户端', 'Client', isClientActive, clientStatus, true);
+      drawNode(serverX, centerY, '服务器', 'Server', isServerActive, serverStatus, false);
 
       if (currentStep === 4) {
         context.fillStyle = '#10b981';
@@ -334,6 +371,14 @@ export default function HTTPPage() {
   const borderColor = isDarkMode ? '#374151' : '#e5e7eb';
   const primaryBlue = '#3b82f6';
 
+  const statusColors: Record<string, string> = {
+    'IDLE': '#6b7280',
+    'LISTEN': primaryBlue,
+    'SYN_SENT': '#8b5cf6',
+    'ESTABLISHED': '#10b981',
+    'CLOSED': '#6b7280',
+  };
+
   return (
     <div className="min-h-screen font-sans" style={{ backgroundColor: bgColor, color: textColor }}>
       <header className="sticky top-0 z-50 border-b" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
@@ -356,8 +401,8 @@ export default function HTTPPage() {
                 <div className="text-xs" style={{ color: secondaryText }}>当前步骤</div>
                 <div className="text-xl font-bold" style={{ color: primaryBlue }}>{currentStep + 1} / {steps.length}</div>
               </div>
-              <button onClick={handleReset} className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:opacity-80" style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', color: textColor }}>🔄 重置</button>
-              <button onClick={handleNext} disabled={currentStep >= steps.length - 1} className="px-6 py-2 rounded-lg font-semibold text-sm transition-all disabled:opacity-50" style={{ backgroundColor: primaryBlue, color: 'white' }}>下一步 →</button>
+              <button onClick={handleReset} className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:opacity-80" style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', color: textColor }}>重置</button>
+              <button onClick={handleNext} disabled={currentStep >= steps.length - 1} className="px-6 py-2 rounded-lg font-semibold text-sm transition-all disabled:opacity-50" style={{ backgroundColor: primaryBlue, color: 'white' }}>下一步</button>
             </div>
           </div>
         </div>
@@ -365,12 +410,16 @@ export default function HTTPPage() {
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="rounded-xl border p-4 mb-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
-            <h3 className="font-bold text-lg mb-3" style={{ color: primaryBlue }}>HTTP 超文本传输协议（HyperText Transfer Protocol）</h3>
-            <p className="text-sm leading-relaxed" style={{ color: textColor }}>
-              <span style={{ color: primaryBlue, fontWeight: 600 }}>请求-响应模型：</span>客户端发送请求，服务器返回响应，是Web应用的基础协议。<br/>
-              <span style={{ color: '#10b981', fontWeight: 600 }}>无状态协议：</span>HTTP本身不保存请求状态，每个请求都是独立的。<br/>
-              <span style={{ color: '#f59e0b', fontWeight: 600 }}>状态码：</span>200 OK成功、404 Not Found未找到、500 Internal Server Error服务器错误。
+            <h3 className="font-bold text-lg mb-3" style={{ color: primaryBlue }}>HTTP 请求响应完整流程</h3>
+            <p className="text-sm leading-relaxed mb-3" style={{ color: textColor }}>
+              HTTP（超文本传输协议）是用于客户端 - 服务器通信的应用层协议，采用请求 - 响应模型。以下是完整的通信过程：
             </p>
+            <div className="space-y-2" style={{ color: textColor }}>
+              <p><span style={{ color: primaryBlue, fontWeight: 600 }}>1. 建立 TCP 连接：</span>在发送 HTTP 请求之前，客户端需要先与服务器建立 TCP 连接。这通过 TCP 三次握手完成：客户端发送 SYN 报文，服务器回复 SYN-ACK，客户端再回复 ACK。连接建立后，双方可以开始数据传输。</p>
+              <p><span style={{ color: '#8b5cf6', fontWeight: 600 }}>2. 发送 HTTP 请求：</span>客户端构建 HTTP 请求报文，包括请求行（GET /index.html HTTP/1.1）、请求头（Host、User-Agent 等）和可选的请求体。GET 请求用于获取资源，是最常见的请求方法。</p>
+              <p><span style={{ color: '#10b981', fontWeight: 600 }}>3. 服务器处理并返回响应：</span>服务器收到请求后，解析请求报文，查找请求的资源（如/index.html 文件），然后构建 HTTP 响应报文。响应包括状态行（HTTP/1.1 200 OK）、响应头（Content-Type、Content-Length 等）和响应体（HTML 页面内容）。</p>
+              <p><span style={{ color: '#f59e0b', fontWeight: 600 }}>4. 关闭连接：</span>在 HTTP/1.0 中，每次请求 - 响应后都会关闭 TCP 连接。而 HTTP/1.1 默认使用持久连接（Keep-Alive），可以在同一个连接上发送多个请求，减少连接建立的开销。</p>
+            </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div className="lg:col-span-3 flex flex-col gap-4">
@@ -409,23 +458,45 @@ export default function HTTPPage() {
                   <p className="text-sm leading-relaxed" style={{ color: textColor }}>{steps[currentStep].description}</p>
                 </div>
                 <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }}>
-                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${((currentStep + 1) / steps.length) * 100}%`, background: `linear-gradient(90deg, ${primaryBlue}, #10b981)` }} />
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${((currentStep + 1) / steps.length) * 100}%`, background: `linear-gradient(90deg, ${primaryBlue}, #8b5cf6, #10b981)` }} />
                 </div>
               </div>
               <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">📦</span>
-                  <div><h4 className="font-bold">HTTP 报文日志</h4><p className="text-xs" style={{ color: secondaryText }}>超文本传输协议</p></div>
+                  <span className="text-lg">报文日志</span>
                 </div>
                 <div className="rounded-lg p-3 overflow-y-auto" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)', maxHeight: '150px' }}>
                   {packetLogs.length === 0 ? (
-                    <div className="flex items-center gap-2 text-sm" style={{ color: secondaryText }}><div className="w-2 h-2 rounded-full" style={{ backgroundColor: secondaryText }} /><span>暂无HTTP报文</span></div>
+                    <div className="flex items-center gap-2 text-sm" style={{ color: secondaryText }}><div className="w-2 h-2 rounded-full" style={{ backgroundColor: secondaryText }} /><span>暂无 HTTP 报文</span></div>
                   ) : packetLogs.map((log, index) => (
                     <div key={index} className="flex items-center gap-2 mb-2 last:mb-0">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: packetColors[log.type]?.start || '#64748b' }} />
                       <span className="text-sm font-semibold" style={{ color: textColor }}>{log.type} {log.from} → {log.to}</span>
                     </div>
                   ))}
+                </div>
+              </div>
+              <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
+                <h4 className="font-bold mb-3">连接状态</h4>
+                <div className="grid grid-cols-1 gap-3 text-xs">
+                  <div className="p-3 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold" style={{ color: textColor }}>客户端</span>
+                      <span className="px-2 py-1 rounded text-xs font-bold" style={{ backgroundColor: statusColors[steps[currentStep].clientStatus] || '#6b7280', color: 'white' }}>
+                        {steps[currentStep].clientStatus}
+                      </span>
+                    </div>
+                    <div className="text-xs" style={{ color: secondaryText }}>Client Side</div>
+                  </div>
+                  <div className="p-3 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold" style={{ color: textColor }}>服务器</span>
+                      <span className="px-2 py-1 rounded text-xs font-bold" style={{ backgroundColor: statusColors[steps[currentStep].serverStatus] || '#6b7280', color: 'white' }}>
+                        {steps[currentStep].serverStatus}
+                      </span>
+                    </div>
+                    <div className="text-xs" style={{ color: secondaryText }}>Server Side</div>
+                  </div>
                 </div>
               </div>
             </div>
