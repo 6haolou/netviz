@@ -174,75 +174,128 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              {/* Logo 和平台名称 - 放在最左边，独立显示 */}
-              <Link href="/" className="flex items-center mr-12">
-                <h1 className="text-2xl font-bold" style={{ color: primaryBlue }}>NetViz</h1>
-                <span className="ml-2 text-lg" style={{ color: secondaryTextColor }}>网络工程可视化</span>
-              </Link>
+            {/* Logo 和平台名称 - 固定在左上角 */}
+            <Link href="/" className="flex items-center flex-shrink-0">
+              <h1 className="text-2xl font-bold" style={{ color: primaryBlue }}>NetViz</h1>
+              <span className="ml-2 text-lg" style={{ color: secondaryTextColor }}>网络工程可视化</span>
+            </Link>
 
-              {/* 导航栏 */}
-              <nav className="hidden md:flex items-center space-x-2">
-                <div className="relative">
-                  <button
-                    onClick={() => setIsOsiOpen(!isOsiOpen)}
-                    className="px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-blue-500 hover:text-white"
-                    style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
+            {/* 导航栏按钮 */}
+            <nav className="hidden md:flex items-center gap-2">
+              <div className="relative">
+                <button
+                  onClick={() => setIsOsiOpen(!isOsiOpen)}
+                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
+                  style={{ 
+                    color: isDarkMode ? '#d1d5db' : '#374151',
+                    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = primaryBlue;
+                    e.currentTarget.style.color = '#ffffff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                    e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
+                  }}
+                >
+                  <span>OSI 七层模型</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isOsiOpen && (
+                  <div
+                    className="absolute top-full left-0 mt-2 w-48 rounded-md shadow-lg py-2 z-50 border"
+                    style={{ backgroundColor: cardBgColor, borderColor: borderColor }}
                   >
-                    <span>OSI 七层模型</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {isOsiOpen && (
-                    <div
-                      className="absolute top-full left-0 mt-2 w-48 rounded-md shadow-lg py-2 z-50 border"
-                      style={{ backgroundColor: cardBgColor, borderColor: borderColor }}
-                    >
-                      {['物理层', '数据链路层', '网络层', '传输层', '会话层', '表示层', '应用层'].map((layer) => (
-                        <Link
-                          key={layer}
-                          href="#"
-                          className="block px-4 py-2 transition-colors duration-300 hover:bg-blue-50 dark:hover:bg-gray-700"
-                          style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
-                        >
-                          {layer}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                    {['物理层', '数据链路层', '网络层', '传输层', '会话层', '表示层', '应用层'].map((layer) => (
+                      <Link
+                        key={layer}
+                        href="#"
+                        className="block px-4 py-2 transition-colors duration-300 hover:bg-blue-50 dark:hover:bg-gray-700"
+                        style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
+                      >
+                        {layer}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-                <Link
-                  href="/category/routing"
-                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-blue-500 hover:text-white"
-                  style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
-                >
-                  路由协议
-                </Link>
-                <Link
-                  href="/category/availability"
-                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-blue-500 hover:text-white"
-                  style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
-                >
-                  高可用性
-                </Link>
-                <Link
-                  href="#"
-                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-blue-500 hover:text-white"
-                  style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
-                >
-                  网络安全
-                </Link>
-                <Link
-                  href="#"
-                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-blue-500 hover:text-white"
-                  style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
-                >
-                  网络管理
-                </Link>
-              </nav>
-            </div>
+              <Link
+                href="/category/routing"
+                className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
+                style={{ 
+                  color: isDarkMode ? '#d1d5db' : '#374151',
+                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = primaryBlue;
+                  e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                  e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
+                }}
+              >
+                路由协议
+              </Link>
+              <Link
+                href="/category/availability"
+                className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
+                style={{ 
+                  color: isDarkMode ? '#d1d5db' : '#374151',
+                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = primaryBlue;
+                  e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                  e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
+                }}
+              >
+                高可用性
+              </Link>
+              <Link
+                href="#"
+                className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
+                style={{ 
+                  color: isDarkMode ? '#d1d5db' : '#374151',
+                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = primaryBlue;
+                  e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                  e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
+                }}
+              >
+                网络安全
+              </Link>
+              <Link
+                href="#"
+                className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
+                style={{ 
+                  color: isDarkMode ? '#d1d5db' : '#374151',
+                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = primaryBlue;
+                  e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                  e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
+                }}
+              >
+                网络管理
+              </Link>
+            </nav>
 
             <div className="flex items-center space-x-4">
               <input
