@@ -411,14 +411,14 @@ export default function HTTPPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="rounded-xl border p-4 mb-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
             <h3 className="font-bold text-lg mb-3" style={{ color: primaryBlue }}>HTTP 请求响应完整流程</h3>
-            <p className="text-sm leading-relaxed mb-3" style={{ color: textColor }}>
+            <p className="text-base leading-relaxed mb-4 font-medium" style={{ color: textColor }}>
               HTTP（超文本传输协议）是用于客户端 - 服务器通信的应用层协议，采用请求 - 响应模型。以下是完整的通信过程：
             </p>
-            <div className="space-y-2" style={{ color: textColor }}>
-              <p><span style={{ color: primaryBlue, fontWeight: 600 }}>1. 建立 TCP 连接：</span>在发送 HTTP 请求之前，客户端需要先与服务器建立 TCP 连接。这通过 TCP 三次握手完成：客户端发送 SYN 报文，服务器回复 SYN-ACK，客户端再回复 ACK。连接建立后，双方可以开始数据传输。</p>
-              <p><span style={{ color: '#8b5cf6', fontWeight: 600 }}>2. 发送 HTTP 请求：</span>客户端构建 HTTP 请求报文，包括请求行（GET /index.html HTTP/1.1）、请求头（Host、User-Agent 等）和可选的请求体。GET 请求用于获取资源，是最常见的请求方法。</p>
-              <p><span style={{ color: '#10b981', fontWeight: 600 }}>3. 服务器处理并返回响应：</span>服务器收到请求后，解析请求报文，查找请求的资源（如/index.html 文件），然后构建 HTTP 响应报文。响应包括状态行（HTTP/1.1 200 OK）、响应头（Content-Type、Content-Length 等）和响应体（HTML 页面内容）。</p>
-              <p><span style={{ color: '#f59e0b', fontWeight: 600 }}>4. 关闭连接：</span>在 HTTP/1.0 中，每次请求 - 响应后都会关闭 TCP 连接。而 HTTP/1.1 默认使用持久连接（Keep-Alive），可以在同一个连接上发送多个请求，减少连接建立的开销。</p>
+            <div className="space-y-3" style={{ color: textColor }}>
+              <p className="text-sm leading-relaxed"><span style={{ color: primaryBlue, fontWeight: 600, fontSize: '15px' }}>1. 建立 TCP 连接：</span>在发送 HTTP 请求之前，客户端需要先与服务器建立 TCP 连接。这通过 TCP 三次握手完成：客户端发送 SYN 报文，服务器回复 SYN-ACK，客户端再回复 ACK。连接建立后，双方可以开始数据传输。</p>
+              <p className="text-sm leading-relaxed"><span style={{ color: '#8b5cf6', fontWeight: 600, fontSize: '15px' }}>2. 发送 HTTP 请求：</span>客户端构建 HTTP 请求报文，包括请求行（GET /index.html HTTP/1.1）、请求头（Host、User-Agent 等）和可选的请求体。GET 请求用于获取资源，是最常见的请求方法。</p>
+              <p className="text-sm leading-relaxed"><span style={{ color: '#10b981', fontWeight: 600, fontSize: '15px' }}>3. 服务器处理并返回响应：</span>服务器收到请求后，解析请求报文，查找请求的资源（如/index.html 文件），然后构建 HTTP 响应报文。响应包括状态行（HTTP/1.1 200 OK）、响应头（Content-Type、Content-Length 等）和响应体（HTML 页面内容）。</p>
+              <p className="text-sm leading-relaxed"><span style={{ color: '#f59e0b', fontWeight: 600, fontSize: '15px' }}>4. 关闭连接：</span>在 HTTP/1.0 中，每次请求 - 响应后都会关闭 TCP 连接。而 HTTP/1.1 默认使用持久连接（Keep-Alive），可以在同一个连接上发送多个请求，减少连接建立的开销。</p>
             </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
