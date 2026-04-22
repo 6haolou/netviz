@@ -44,38 +44,38 @@ export default function TCPPage() {
 
   const steps: StepInfo[] = [
     {
-      phase: 'Initial State',
+      phase: 'Initial',
       icon: '[ ]',
-      title: 'TCP Connection Before',
-      description: 'Client initiates connection request, server is in LISTEN state, waiting for client connection.',
+      title: 'TCP 连接前',
+      description: '客户端发起连接请求，服务端处于 LISTEN 状态，等待客户端的连接请求。',
       packets: [],
     },
     {
-      phase: 'First Handshake',
+      phase: 'SYN',
       icon: 'SYN',
-      title: 'SYN Request',
-      description: 'Client sends SYN packet to request connection establishment. Client randomly selects initial sequence number (ISN).',
+      title: 'SYN 同步请求',
+      description: '客户端发送 SYN 报文（同步标志），请求建立连接。客户端随机选择一个初始序列号 (ISN)。',
       packets: [{ from: 0, to: 1, type: 'SYN', delay: 0 }],
     },
     {
-      phase: 'Second Handshake',
+      phase: 'SYN-ACK',
       icon: 'ACK',
-      title: 'SYN-ACK Response',
-      description: 'Server receives SYN, sends SYN-ACK as response. Confirms client SYN and sends its own SYN.',
+      title: 'SYN-ACK 同步确认',
+      description: '服务端收到 SYN 后，发送 SYN-ACK 报文作为响应。确认收到客户端的 SYN，并发送自己的 SYN。',
       packets: [{ from: 1, to: 0, type: 'SYN-ACK', delay: 0 }],
     },
     {
-      phase: 'Third Handshake',
+      phase: 'ACK',
       icon: 'ACK',
-      title: 'ACK Confirmation',
-      description: 'Client receives SYN-ACK, sends ACK confirmation. Connection established, both sides can transmit data.',
+      title: 'ACK 确认完成',
+      description: '客户端收到 SYN-ACK 后，发送 ACK 确认报文。连接建立完成，双方可以开始传输数据。',
       packets: [{ from: 0, to: 1, type: 'ACK', delay: 0 }],
     },
     {
-      phase: 'Connection Established',
+      phase: 'OK',
       icon: '[OK]',
-      title: 'TCP Connection Complete',
-      description: 'Three-way handshake completed! TCP connection successfully established! Both sides enter ESTABLISHED state.',
+      title: 'TCP 连接完成',
+      description: '三次握手完成，TCP 连接成功建立！双方进入 ESTABLISHED 状态，可以开始数据传输。',
       packets: [],
     },
   ];
@@ -107,7 +107,7 @@ export default function TCPPage() {
 
     setPackets(newPackets);
     setPacketLogs(step.packets.map((p) => {
-      const labels = ['Client', 'Server'];
+      const labels = ['客户端', '服务端'];
       return {
         type: p.type,
         from: labels[p.from],
@@ -217,14 +217,14 @@ export default function TCPPage() {
 
       const isClientActive = currentStep >= 1 && currentStep <= 3;
       const isServerActive = currentStep >= 2 && currentStep <= 3;
-      drawNode(clientX, centerY, 'Client', 'TCP Client', isClientActive);
-      drawNode(serverX, centerY, 'Server', 'TCP Server', isServerActive);
+      drawNode(clientX, centerY, '客户端', 'Client', isClientActive);
+      drawNode(serverX, centerY, '服务端', 'Server', isServerActive);
 
       if (currentStep === 4) {
         context.fillStyle = '#10b981';
         context.font = 'bold 24px Inter, system-ui, sans-serif';
         context.textAlign = 'center';
-        context.fillText('Connection Established', width / 2, centerY - 80);
+        context.fillText('连接已建立', width / 2, centerY - 80);
       }
 
       const now = Date.now();
@@ -378,23 +378,23 @@ export default function TCPPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                <span className="font-medium">Back to Home</span>
+                <span className="font-medium">返回主页</span>
               </a>
               <div>
-                <h1 className="text-2xl font-bold" style={{ color: primaryBlue }}>TCP Three-Way Handshake</h1>
+                <h1 className="text-2xl font-bold" style={{ color: primaryBlue }}>TCP 三次握手</h1>
                 <p className="text-sm mt-1" style={{ color: secondaryText }}>Transmission Control Protocol</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="px-4 py-2 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)', borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)' }}>
-                <div className="text-xs" style={{ color: secondaryText }}>Current Step</div>
+                <div className="text-xs" style={{ color: secondaryText }}>当前步骤</div>
                 <div className="text-xl font-bold" style={{ color: primaryBlue }}>{currentStep + 1} / {steps.length}</div>
               </div>
               <button onClick={handleReset} className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:opacity-80" style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', color: textColor }}>
-                Reset
+                重置
               </button>
               <button onClick={handleNext} disabled={currentStep >= steps.length - 1} className="px-6 py-2 rounded-lg font-semibold text-sm transition-all disabled:opacity-50" style={{ backgroundColor: primaryBlue, color: 'white' }}>
-                Next
+                下一步
               </button>
             </div>
           </div>
@@ -404,11 +404,11 @@ export default function TCPPage() {
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="rounded-xl border p-4 mb-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
-            <h3 className="font-bold text-lg mb-3" style={{ color: primaryBlue }}>TCP Three-Way Handshake</h3>
+            <h3 className="font-bold text-lg mb-3" style={{ color: primaryBlue }}>TCP 三次握手协议</h3>
             <p className="text-sm leading-relaxed" style={{ color: textColor }}>
-              <span style={{ color: primaryBlue, fontWeight: 600 }}>Reliable Connection:</span> TCP establishes reliable connection through three-way handshake, ensuring both parties can send and receive data normally.<br/>
-              <span style={{ color: '#8b5cf6', fontWeight: 600 }}>Sequence Number:</span> Both parties maintain sequence numbers for data ordering and reliability.<br/>
-              <span style={{ color: '#10b981', fontWeight: 600 }}>State Transition:</span> CLOSED - SYN_SENT - ESTABLISHED (client), LISTEN - SYN_RCVD - ESTABLISHED (server).
+              <span style={{ color: primaryBlue, fontWeight: 600 }}>可靠连接：</span>TCP 通过三次握手建立可靠连接，确保双方都能正常发送和接收数据。<br/>
+              <span style={{ color: '#8b5cf6', fontWeight: 600 }}>序列号：</span>双方各自维护一个序列号，用于数据的顺序和可靠性保证。<br/>
+              <span style={{ color: '#10b981', fontWeight: 600 }}>状态转换：</span>CLOSED - SYN_SENT - ESTABLISHED（客户端），LISTEN - SYN_RCVD - ESTABLISHED（服务端）。
             </p>
           </div>
 
@@ -420,7 +420,7 @@ export default function TCPPage() {
 
               <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm font-bold" style={{ color: secondaryText }}>Steps:</span>
+                  <span className="text-sm font-bold" style={{ color: secondaryText }}>步骤:</span>
                   <div className="flex gap-2">
                     {steps.map((_, index) => (
                       <button
@@ -465,7 +465,7 @@ export default function TCPPage() {
                   <span className="text-2xl" style={{ color: primaryBlue }}>{steps[currentStep].icon}</span>
                   <div>
                     <h3 className="font-bold text-lg">{steps[currentStep].title}</h3>
-                    <p className="text-xs" style={{ color: secondaryText }}>Step {currentStep + 1} of {steps.length} | {steps[currentStep].phase}</p>
+                    <p className="text-xs" style={{ color: secondaryText }}>步骤 {currentStep + 1} of {steps.length} | {steps[currentStep].phase}</p>
                   </div>
                 </div>
 
@@ -480,14 +480,14 @@ export default function TCPPage() {
 
               <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">Packet Log</span>
+                  <span className="text-lg">报文日志</span>
                 </div>
 
                 <div className="rounded-lg p-3 overflow-y-auto" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)', maxHeight: '150px' }}>
                   {packetLogs.length === 0 ? (
                     <div className="flex items-center gap-2 text-sm" style={{ color: secondaryText }}>
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: secondaryText }} />
-                      <span>No packets yet</span>
+                      <span>暂无 TCP 报文</span>
                     </div>
                   ) : (
                     packetLogs.map((log, index) => (
@@ -503,23 +503,23 @@ export default function TCPPage() {
               </div>
 
               <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
-                <h4 className="font-bold mb-3">TCP Connection States</h4>
+                <h4 className="font-bold mb-3">TCP 连接状态</h4>
                 <div className="grid grid-cols-1 gap-2 text-xs">
                   <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#6b7280' }} />
-                    <span style={{ color: textColor }}>CLOSED</span>
+                    <span style={{ color: textColor }}>CLOSED: 关闭</span>
                   </div>
                   <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryBlue }} />
-                    <span style={{ color: textColor }}>LISTEN</span>
+                    <span style={{ color: textColor }}>LISTEN: 监听</span>
                   </div>
                   <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8b5cf6' }} />
-                    <span style={{ color: textColor }}>SYN_SENT</span>
+                    <span style={{ color: textColor }}>SYN_SENT: 已发送 SYN</span>
                   </div>
                   <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10b981' }} />
-                    <span style={{ color: textColor }}>ESTABLISHED</span>
+                    <span style={{ color: textColor }}>ESTABLISHED: 已建立</span>
                   </div>
                 </div>
               </div>
@@ -531,7 +531,7 @@ export default function TCPPage() {
       <footer className="border-t" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="text-center text-sm" style={{ color: secondaryText }}>
-            NetViz - Network Engineering Visualization | TCP Three-Way Handshake Demo
+            NetViz - 网络工程可视化平台 | TCP 三次握手动画演示
           </div>
         </div>
       </footer>
