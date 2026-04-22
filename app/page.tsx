@@ -173,16 +173,16 @@ export default function Home() {
         className="sticky top-0 z-50 border-b"
         style={{ backgroundColor: headerBg, borderColor: headerBorder }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             {/* Logo 和平台名称 - 固定在左上角 */}
-            <Link href="/" className="flex items-center flex-shrink-0">
+            <Link href="/" className="flex items-center flex-shrink-0" style={{ position: 'fixed', top: '16px', left: '16px', zIndex: 60 }}>
               <h1 className="text-2xl font-bold" style={{ color: primaryBlue }}>NetViz</h1>
               <span className="ml-2 text-lg" style={{ color: secondaryTextColor }}>网络工程可视化</span>
             </Link>
 
-            {/* 导航栏按钮 */}
-            <nav className="hidden md:flex items-center gap-2">
+            {/* 导航栏按钮 - 居中显示 */}
+            <nav className="hidden md:flex items-center gap-2" style={{ marginLeft: '280px' }}>
               <div className="relative">
                 <button
                   onClick={() => setIsOsiOpen(!isOsiOpen)}
@@ -220,15 +220,27 @@ export default function Home() {
                 </button>
                 {isOsiOpen && (
                   <div
-                    className="absolute top-full left-0 mt-2 w-48 rounded-md shadow-lg py-2 z-50 border"
-                    style={{ backgroundColor: cardBgColor, borderColor: borderColor }}
+                    className="absolute top-full left-0 mt-2 w-48 rounded-md shadow-lg py-2 z-50 border animate-in fade-in slide-in-from-top-2 duration-200"
+                    style={{ 
+                      backgroundColor: cardBgColor, 
+                      borderColor: borderColor,
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                    }}
                   >
-                    {['物理层', '数据链路层', '网络层', '传输层', '会话层', '表示层', '应用层'].map((layer) => (
+                    {['物理层', '数据链路层', '网络层', '传输层', '会话层', '表示层', '应用层'].map((layer, index) => (
                       <Link
-                        key={layer}
+                        key={index}
                         href="#"
-                        className="block px-4 py-2 transition-colors duration-300 hover:bg-blue-50 dark:hover:bg-gray-700"
+                        className="block px-4 py-2 transition-all duration-200 hover:translate-x-1"
                         style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#eff6ff';
+                          e.currentTarget.style.color = primaryBlue;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
+                        }}
                       >
                         {layer}
                       </Link>
