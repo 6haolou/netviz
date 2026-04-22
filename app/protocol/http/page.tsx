@@ -183,8 +183,8 @@ export default function HTTPPage() {
       if (currentStep === 1) {
         const clientX = width * 0.25;
         const serverX = width * 0.75;
-        const topY = height * 0.15;
-        const bottomY = height * 0.85;
+        const topY = height * 0.12;
+        const bottomY = height * 0.92;
         
         // 绘制垂直时间线（虚线）
         context.strokeStyle = isDarkMode ? '#6b7280' : '#9ca3af';
@@ -237,6 +237,8 @@ export default function HTTPPage() {
 
         // 绘制三个报文箭头
         const now = Date.now();
+        const clientISN = 1000; // 客户端初始序列号
+        const serverISN = 2000; // 服务器初始序列号
         
         // 第一次握手：SYN（从上到下）
         const synPacket = packets.find(p => p.type === 'SYN');
@@ -268,18 +270,21 @@ export default function HTTPPage() {
             context.closePath();
             context.fill();
             
-            // 报文标签
+            // 报文标签和序列号
             context.fillStyle = 'white';
             context.font = 'bold 12px Inter, system-ui, sans-serif';
-            context.fillText('SYN', (clientX + serverX) / 2, synY1 - 10);
+            context.fillText('SYN', (clientX + serverX) / 2, synY1 - 15);
+            context.font = '10px Inter, system-ui, sans-serif';
+            context.fillStyle = isDarkMode ? '#d1d5db' : '#6b7280';
+            context.fillText(`SYN=1, seq=${clientISN}`, (clientX + serverX) / 2, synY1);
           }
         }
         
         // 第二次握手：SYN+ACK（从下到上）
         const synAckPacket = packets.find(p => p.type === 'SYN+ACK');
         const synAckProgress = synAckPacket && now >= synAckPacket.startTime ? Math.min(1, (now - synAckPacket.startTime) / 1000) : 0;
-        const synAckY1 = topY + 200;
-        const synAckY2 = topY + 300;
+        const synAckY1 = topY + 220;
+        const synAckY2 = topY + 320;
         const synAckCurrentY = synAckY1 + (synAckY2 - synAckY1) * synAckProgress;
         
         if (synAckProgress > 0) {
@@ -305,15 +310,19 @@ export default function HTTPPage() {
             
             context.fillStyle = 'white';
             context.font = 'bold 12px Inter, system-ui, sans-serif';
-            context.fillText('SYN+ACK', (clientX + serverX) / 2 + 40, synAckY1 - 10);
+            context.fillText('SYN+ACK', (clientX + serverX) / 2 + 50, synAckY1 - 15);
+            context.font = '10px Inter, system-ui, sans-serif';
+            context.fillStyle = isDarkMode ? '#d1d5db' : '#6b7280';
+            context.fillText(`SYN=1, seq=${serverISN}`, (clientX + serverX) / 2 + 50, synAckY1);
+            context.fillText(`ACK=1, ack=${clientISN + 1}`, (clientX + serverX) / 2 + 50, synAckY1 + 12);
           }
         }
         
         // 第三次握手：ACK（从上到下）
         const ackPacket = packets.find(p => p.type === 'ACK');
         const ackProgress = ackPacket && now >= ackPacket.startTime ? Math.min(1, (now - ackPacket.startTime) / 1000) : 0;
-        const ackY1 = topY + 320;
-        const ackY2 = topY + 420;
+        const ackY1 = topY + 360;
+        const ackY2 = topY + 460;
         const ackCurrentY = ackY1 + (ackY2 - ackY1) * ackProgress;
         
         if (ackProgress > 0) {
@@ -339,7 +348,11 @@ export default function HTTPPage() {
             
             context.fillStyle = 'white';
             context.font = 'bold 12px Inter, system-ui, sans-serif';
-            context.fillText('ACK', (clientX + serverX) / 2, ackY1 - 10);
+            context.fillText('ACK', (clientX + serverX) / 2, ackY1 - 15);
+            context.font = '10px Inter, system-ui, sans-serif';
+            context.fillStyle = isDarkMode ? '#d1d5db' : '#6b7280';
+            context.fillText(`SYN=0, seq=${clientISN + 1}`, (clientX + serverX) / 2, ackY1);
+            context.fillText(`ACK=1, ack=${serverISN + 1}`, (clientX + serverX) / 2, ackY1 + 12);
           }
         }
       } else {
@@ -597,7 +610,7 @@ export default function HTTPPage() {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div className="lg:col-span-3 flex flex-col gap-4">
-              <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: cardBg, borderColor: borderColor, minHeight: '400px' }}>
+              <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: cardBg, borderColor: borderColor, minHeight: currentStep === 1 ? '600px' : '400px' }}>
                 <canvas ref={canvasRef} className="w-full h-full" />
               </div>
               <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
