@@ -19,6 +19,8 @@ interface StepInfo {
   icon: React.ReactNode;
   title: string;
   description: string;
+  clientStatus: string;
+  serverStatus: string;
   packets: { from: number; to: number; type: string; delay: number }[];
 }
 
@@ -48,35 +50,45 @@ export default function TCPPage() {
       phase: 'Initial',
       icon: <Emoji label="[ ]" />,
       title: 'TCP 连接前',
-      description: '客户端发起连接请求，服务端处于 LISTEN 状态，等待客户端的连接请求。',
+      description: '客户端准备发起连接请求，服务端已经启动并处于 LISTEN 状态，等待客户端的连接请求。此时双方还未开始任何通信。',
+      clientStatus: 'CLOSED',
+      serverStatus: 'LISTEN',
       packets: [],
     },
     {
       phase: 'SYN',
       icon: <Emoji label="SYN" />,
-      title: 'SYN 同步请求',
-      description: '客户端发送 SYN 报文（同步标志），请求建立连接。客户端随机选择一个初始序列号 (ISN)。',
+      title: '第一次握手：SYN 同步请求',
+      description: '客户端发送 SYN 报文（同步标志），请求建立连接。客户端随机选择一个初始序列号 (ISN=seq=x)，并进入 SYN_SENT 状态。',
+      clientStatus: 'SYN_SENT',
+      serverStatus: 'LISTEN',
       packets: [{ from: 0, to: 1, type: 'SYN', delay: 0 }],
     },
     {
       phase: 'SYN-ACK',
       icon: <Emoji label="ACK" />,
-      title: 'SYN-ACK 同步确认',
-      description: '服务端收到 SYN 后，发送 SYN-ACK 报文作为响应。确认收到客户端的 SYN，并发送自己的 SYN。',
+      title: '第二次握手：SYN-ACK 同步确认',
+      description: '服务端收到 SYN 报文后，发送 SYN-ACK 报文作为响应。服务端确认客户端的 SYN（ack=x+1），并发送自己的 SYN（seq=y），进入 SYN_RCVD 状态。',
+      clientStatus: 'SYN_SENT',
+      serverStatus: 'SYN_RCVD',
       packets: [{ from: 1, to: 0, type: 'SYN-ACK', delay: 0 }],
     },
     {
       phase: 'ACK',
       icon: <Emoji label="ACK" />,
-      title: 'ACK 确认完成',
-      description: '客户端收到 SYN-ACK 后，发送 ACK 确认报文。连接建立完成，双方可以开始传输数据。',
+      title: '第三次握手：ACK 确认完成',
+      description: '客户端收到 SYN-ACK 后，发送 ACK 确认报文（ack=y+1）。客户端进入 ESTABLISHED 状态，服务端收到 ACK 后也进入 ESTABLISHED 状态。',
+      clientStatus: 'ESTABLISHED',
+      serverStatus: 'ESTABLISHED',
       packets: [{ from: 0, to: 1, type: 'ACK', delay: 0 }],
     },
     {
       phase: 'OK',
       icon: <Emoji label="[OK]" />,
       title: 'TCP 连接完成',
-      description: '三次握手完成，TCP 连接成功建立！双方进入 ESTABLISHED 状态，可以开始数据传输。',
+      description: '三次握手完成，TCP 连接成功建立！双方都进入 ESTABLISHED 状态，可以开始全双工数据传输。整个过程确保了双方都能正常发送和接收数据。',
+      clientStatus: 'ESTABLISHED',
+      serverStatus: 'ESTABLISHED',
       packets: [],
     },
   ];
@@ -179,7 +191,7 @@ export default function TCPPage() {
       context.stroke();
       context.setLineDash([]);
 
-      const drawNode = (x: number, y: number, label: string, sublabel: string, isActive: boolean) => {
+      const drawNode = (x: number, y: number, label: string, sublabel: string, isActive: boolean, status?: string) => {
         const pulse = Math.sin(timeRef.current * 3) * 4;
         const color = primaryBlue;
 
@@ -214,12 +226,20 @@ export default function TCPPage() {
         context.fillStyle = secondaryText;
         context.font = '12px Inter, system-ui, sans-serif';
         context.fillText(sublabel, x, y + 100);
+
+        if (status) {
+          context.fillStyle = '#10b981';
+          context.font = 'bold 11px Inter, system-ui, sans-serif';
+          context.fillText(status, x, y + 120);
+        }
       };
 
       const isClientActive = currentStep >= 1 && currentStep <= 3;
       const isServerActive = currentStep >= 2 && currentStep <= 3;
-      drawNode(clientX, centerY, '客户端', 'Client', isClientActive);
-      drawNode(serverX, centerY, '服务端', 'Server', isServerActive);
+      const clientStatus = steps[currentStep].clientStatus;
+      const serverStatus = steps[currentStep].serverStatus;
+      drawNode(clientX, centerY, '客户端', 'Client', isClientActive, clientStatus);
+      drawNode(serverX, centerY, '服务端', 'Server', isServerActive, serverStatus);
 
       if (currentStep === 4) {
         context.fillStyle = '#10b981';
@@ -369,6 +389,14 @@ export default function TCPPage() {
   const borderColor = isDarkMode ? '#374151' : '#e5e7eb';
   const primaryBlue = '#3b82f6';
 
+  const statusColors: Record<string, string> = {
+    'CLOSED': '#6b7280',
+    'LISTEN': primaryBlue,
+    'SYN_SENT': '#8b5cf6',
+    'SYN_RCVD': '#f59e0b',
+    'ESTABLISHED': '#10b981',
+  };
+
   return (
     <div className="min-h-screen font-sans" style={{ backgroundColor: bgColor, color: textColor }}>
       <header className="sticky top-0 z-50 border-b" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
@@ -405,11 +433,11 @@ export default function TCPPage() {
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="rounded-xl border p-4 mb-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
-            <h3 className="font-bold text-lg mb-3" style={{ color: primaryBlue }}>TCP 三次握手协议</h3>
+            <h3 className="font-bold text-lg mb-3" style={{ color: primaryBlue }}>TCP 三次握手完整流程</h3>
             <p className="text-sm leading-relaxed" style={{ color: textColor }}>
-              <span style={{ color: primaryBlue, fontWeight: 600 }}>可靠连接：</span>TCP 通过三次握手建立可靠连接，确保双方都能正常发送和接收数据。<br/>
-              <span style={{ color: '#8b5cf6', fontWeight: 600 }}>序列号：</span>双方各自维护一个序列号，用于数据的顺序和可靠性保证。<br/>
-              <span style={{ color: '#10b981', fontWeight: 600 }}>状态转换：</span>CLOSED - SYN_SENT - ESTABLISHED（客户端），LISTEN - SYN_RCVD - ESTABLISHED（服务端）。
+              <span style={{ color: primaryBlue, fontWeight: 600 }}>第一次握手：</span>客户端发送 SYN 报文给服务端，进入 SYN_SENT 状态。<br/>
+              <span style={{ color: '#8b5cf6', fontWeight: 600 }}>第二次握手：</span>服务端收到 SYN 后发送 SYN-ACK 报文，进入 SYN_RCVD 状态。<br/>
+              <span style={{ color: '#10b981', fontWeight: 600 }}>第三次握手：</span>客户端收到 SYN-ACK 后发送 ACK 报文，双方进入 ESTABLISHED 状态，连接建立完成。
             </p>
           </div>
 
@@ -481,21 +509,21 @@ export default function TCPPage() {
 
               <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">报文日志</span>
+                  <span className="text-lg">当前报文</span>
                 </div>
 
                 <div className="rounded-lg p-3 overflow-y-auto" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)', maxHeight: '150px' }}>
                   {packetLogs.length === 0 ? (
                     <div className="flex items-center gap-2 text-sm" style={{ color: secondaryText }}>
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: secondaryText }} />
-                      <span>暂无 TCP 报文</span>
+                      <span>暂无报文</span>
                     </div>
                   ) : (
                     packetLogs.map((log, index) => (
                       <div key={index} className="flex items-center gap-2 mb-2 last:mb-0">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: packetColors[log.type]?.start || '#64748b' }} />
                         <span className="text-sm font-semibold" style={{ color: textColor }}>
-                          {log.type} {log.from} to {log.to}
+                          {log.type}: {log.from} → {log.to}
                         </span>
                       </div>
                     ))
@@ -505,22 +533,24 @@ export default function TCPPage() {
 
               <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
                 <h4 className="font-bold mb-3">TCP 连接状态</h4>
-                <div className="grid grid-cols-1 gap-2 text-xs">
-                  <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#6b7280' }} />
-                    <span style={{ color: textColor }}>CLOSED: 关闭</span>
+                <div className="grid grid-cols-1 gap-3 text-xs">
+                  <div className="p-3 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold" style={{ color: textColor }}>客户端</span>
+                      <span className="px-2 py-1 rounded text-xs font-bold" style={{ backgroundColor: statusColors[steps[currentStep].clientStatus] || '#6b7280', color: 'white' }}>
+                        {steps[currentStep].clientStatus}
+                      </span>
+                    </div>
+                    <div className="text-xs" style={{ color: secondaryText }}>Client Side</div>
                   </div>
-                  <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryBlue }} />
-                    <span style={{ color: textColor }}>LISTEN: 监听</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8b5cf6' }} />
-                    <span style={{ color: textColor }}>SYN_SENT: 已发送 SYN</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10b981' }} />
-                    <span style={{ color: textColor }}>ESTABLISHED: 已建立</span>
+                  <div className="p-3 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold" style={{ color: textColor }}>服务端</span>
+                      <span className="px-2 py-1 rounded text-xs font-bold" style={{ backgroundColor: statusColors[steps[currentStep].serverStatus] || '#6b7280', color: 'white' }}>
+                        {steps[currentStep].serverStatus}
+                      </span>
+                    </div>
+                    <div className="text-xs" style={{ color: secondaryText }}>Server Side</div>
                   </div>
                 </div>
               </div>
