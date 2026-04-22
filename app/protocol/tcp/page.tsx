@@ -224,7 +224,7 @@ export default function TCPPage() {
         context.fillStyle = '#10b981';
         context.font = 'bold 24px Inter, system-ui, sans-serif';
         context.textAlign = 'center';
-        context.fillText('✓ 连接已建立', width / 2, centerY - 80);
+        context.fillText('连接已建立', width / 2, centerY - 80);
       }
 
       const now = Date.now();
@@ -391,10 +391,10 @@ export default function TCPPage() {
                 <div className="text-xl font-bold" style={{ color: primaryBlue }}>{currentStep + 1} / {steps.length}</div>
               </div>
               <button onClick={handleReset} className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:opacity-80" style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', color: textColor }}>
-                🔄 重置
+                重置
               </button>
               <button onClick={handleNext} disabled={currentStep >= steps.length - 1} className="px-6 py-2 rounded-lg font-semibold text-sm transition-all disabled:opacity-50" style={{ backgroundColor: primaryBlue, color: 'white' }}>
-                下一步 →
+                下一步
               </button>
             </div>
           </div>
@@ -408,7 +408,7 @@ export default function TCPPage() {
             <p className="text-sm leading-relaxed" style={{ color: textColor }}>
               <span style={{ color: primaryBlue, fontWeight: 600 }}>可靠连接：</span>TCP通过三次握手建立可靠连接，确保双方都能正常发送和接收数据。<br/>
               <span style={{ color: '#8b5cf6', fontWeight: 600 }}>序列号：</span>双方各自维护一个序列号，用于数据的顺序和可靠性保证。<br/>
-              <span style={{ color: '#10b981', fontWeight: 600 }}>状态转换：</span>CLOSED → SYN_SENT → ESTABLISHED（客户端），LISTEN → SYN_RCVD → ESTABLISHED（服务端）。
+              <span style={{ color: '#10b981', fontWeight: 600 }}>状态转换：</span>CLOSED - SYN_SENT - ESTABLISHED（客户端），LISTEN - SYN_RCVD - ESTABLISHED（服务端）。
             </p>
           </div>
 
@@ -480,7 +480,7 @@ export default function TCPPage() {
 
               <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">📦</span>
+                  <span className="text-lg">报文日志</span>
                   <div>
                     <h4 className="font-bold">TCP 报文日志</h4>
                     <p className="text-xs" style={{ color: secondaryText }}>传输控制协议</p>
@@ -498,7 +498,7 @@ export default function TCPPage() {
                       <div key={index} className="flex items-center gap-2 mb-2 last:mb-0">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: packetColors[log.type]?.start || '#64748b' }} />
                         <span className="text-sm font-semibold" style={{ color: textColor }}>
-                          {log.type} {log.from} → {log.to}
+                          {log.type} {log.from} to {log.to}
                         </span>
                       </div>
                     ))
