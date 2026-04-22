@@ -56,19 +56,37 @@ export default function HTTPPage() {
       packets: [],
     },
     {
-      phase: '建立连接',
-      icon: <Emoji label="TCP" />,
-      title: '第一次握手：TCP 连接建立',
-      description: '客户端与服务端通过 TCP 三次握手建立连接。客户端发送 SYN 报文，进入 SYN_SENT 状态。',
+      phase: 'TCP 握手 1',
+      icon: <Emoji label="SYN" />,
+      title: 'TCP 第一次握手：SYN 同步',
+      description: '客户端发送 SYN 报文（seq=x），请求建立连接。客户端进入 SYN_SENT 状态。这是 TCP 三次握手的第一步。',
       clientStatus: 'SYN_SENT',
       serverStatus: 'LISTEN',
       packets: [{ from: 0, to: 1, type: 'SYN', delay: 0 }],
     },
     {
+      phase: 'TCP 握手 2',
+      icon: <Emoji label="SYN+ACK" />,
+      title: 'TCP 第二次握手：SYN+ACK 确认',
+      description: '服务器收到 SYN 后，回复 SYN+ACK 报文（ack=x+1, seq=y），确认客户端的 SYN 请求。服务器进入 SYN_RCVD 状态。',
+      clientStatus: 'SYN_SENT',
+      serverStatus: 'SYN_RCVD',
+      packets: [{ from: 1, to: 0, type: 'SYN+ACK', delay: 0 }],
+    },
+    {
+      phase: 'TCP 握手 3',
+      icon: <Emoji label="ACK" />,
+      title: 'TCP 第三次握手：ACK 确认',
+      description: '客户端收到 SYN+ACK 后，发送 ACK 报文（ack=y+1）进行确认。双方都进入 ESTABLISHED 状态，TCP 连接建立完成。',
+      clientStatus: 'ESTABLISHED',
+      serverStatus: 'ESTABLISHED',
+      packets: [{ from: 0, to: 1, type: 'ACK', delay: 0 }],
+    },
+    {
       phase: '发送请求',
       icon: <Emoji label="GET" />,
-      title: '第二次握手：发送 HTTP GET 请求',
-      description: 'TCP 连接建立后，客户端发送 HTTP GET 请求，请求获取/index.html 页面内容。',
+      title: '发送 HTTP GET 请求',
+      description: 'TCP 连接建立后，客户端发送 HTTP GET 请求，请求获取/index.html 页面内容。报文包括请求行、请求头和可选的请求体。',
       clientStatus: 'ESTABLISHED',
       serverStatus: 'ESTABLISHED',
       packets: [{ from: 0, to: 1, type: 'GET', delay: 0 }],
@@ -76,8 +94,8 @@ export default function HTTPPage() {
     {
       phase: '返回响应',
       icon: <Emoji label="200" />,
-      title: '第三次握手：服务器返回响应',
-      description: '服务器收到 GET 请求后，返回 200 OK 状态码，以及请求的 HTML 页面内容。',
+      title: '服务器返回 HTTP 响应',
+      description: '服务器收到 GET 请求后，解析请求报文，查找请求的资源，然后返回 200 OK 状态码和 HTML 页面内容。',
       clientStatus: 'ESTABLISHED',
       serverStatus: 'ESTABLISHED',
       packets: [{ from: 1, to: 0, type: '200 OK', delay: 0 }],
@@ -86,7 +104,7 @@ export default function HTTPPage() {
       phase: '完成',
       icon: <Emoji label="[OK]" />,
       title: 'HTTP 请求完成',
-      description: '客户端收到响应，HTTP 请求 - 响应周期完成。连接可以保持或关闭。',
+      description: '客户端收到响应，HTTP 请求 - 响应周期完成。在 HTTP/1.1 中，连接可以保持（Keep-Alive）以发送更多请求。',
       clientStatus: 'CLOSED',
       serverStatus: 'CLOSED',
       packets: [],
@@ -95,6 +113,8 @@ export default function HTTPPage() {
 
   const packetColors: Record<string, { start: string; end: string }> = {
     'SYN': { start: '#6b7280', end: '#4b5563' },
+    'SYN+ACK': { start: '#8b5cf6', end: '#7c3aed' },
+    'ACK': { start: '#3b82f6', end: '#2563eb' },
     'GET': { start: '#3b82f6', end: '#2563eb' },
     '200 OK': { start: '#10b981', end: '#059669' },
   };
@@ -439,7 +459,9 @@ export default function HTTPPage() {
                   </div>
                 </div>
                 <div className="flex justify-center gap-6 flex-wrap">
-                  <div className="flex items-center gap-2"><div className="w-4 h-4 rounded" style={{ backgroundColor: '#6b7280' }} /><span className="text-xs font-semibold" style={{ color: textColor }}>TCP</span></div>
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 rounded" style={{ backgroundColor: '#6b7280' }} /><span className="text-xs font-semibold" style={{ color: textColor }}>SYN</span></div>
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 rounded" style={{ backgroundColor: '#8b5cf6' }} /><span className="text-xs font-semibold" style={{ color: textColor }}>SYN+ACK</span></div>
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} /><span className="text-xs font-semibold" style={{ color: textColor }}>ACK</span></div>
                   <div className="flex items-center gap-2"><div className="w-4 h-4 rounded" style={{ backgroundColor: primaryBlue }} /><span className="text-xs font-semibold" style={{ color: textColor }}>GET</span></div>
                   <div className="flex items-center gap-2"><div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} /><span className="text-xs font-semibold" style={{ color: textColor }}>200 OK</span></div>
                 </div>
