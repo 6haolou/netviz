@@ -191,9 +191,9 @@ export default function TCPPage() {
       context.stroke();
       context.setLineDash([]);
 
-      const drawNode = (x: number, y: number, label: string, sublabel: string, isActive: boolean, status?: string) => {
+      const drawNode = (x: number, y: number, label: string, sublabel: string, isActive: boolean, status?: string, isClient?: boolean) => {
         const pulse = Math.sin(timeRef.current * 3) * 4;
-        const color = primaryBlue;
+        const color = isClient ? '#3b82f6' : '#8b5cf6';
 
         if (isActive) {
           const glowGradient = context.createRadialGradient(x, y, 40, x, y, 80 + pulse);
@@ -205,18 +205,40 @@ export default function TCPPage() {
           context.fill();
         }
 
+        // 绘制不同的节点形状
         const nodeGradient = context.createLinearGradient(x - 50, y - 50, x + 50, y + 50);
         nodeGradient.addColorStop(0, color);
         nodeGradient.addColorStop(1, color + 'cc');
         context.fillStyle = nodeGradient;
-        context.beginPath();
-        context.roundRect(x - 50, y - 50, 100, 100, 12);
-        context.fill();
-
-        context.fillStyle = 'rgba(255, 255, 255, 0.2)';
-        context.fillRect(x - 40, y - 30, 80, 5);
-        context.fillRect(x - 40, y - 20, 80, 5);
-        context.fillRect(x - 40, y - 10, 80, 5);
+        
+        if (isClient) {
+          // 客户端：圆角矩形
+          context.beginPath();
+          context.roundRect(x - 50, y - 50, 100, 100, 12);
+          context.fill();
+          
+          // 客户端图标（显示器）
+          context.fillStyle = 'white';
+          context.fillRect(x - 35, y - 30, 70, 45);
+          context.fillRect(x - 20, y + 15, 40, 8);
+          context.fillRect(x - 30, y + 23, 60, 6);
+        } else {
+          // 服务端：圆柱体（数据库/服务器图标）
+          context.beginPath();
+          context.ellipse(x, y - 35, 50, 15, 0, 0, Math.PI * 2);
+          context.fill();
+          context.fillRect(x - 50, y - 35, 100, 70);
+          context.beginPath();
+          context.ellipse(x, y + 35, 50, 15, 0, 0, Math.PI * 2);
+          context.fill();
+          
+          // 服务器装饰线
+          context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+          context.fillRect(x - 40, y - 20, 80, 4);
+          context.fillRect(x - 40, y - 10, 80, 4);
+          context.fillRect(x - 40, y, 80, 4);
+          context.fillRect(x - 40, y + 10, 80, 4);
+        }
 
         context.fillStyle = 'white';
         context.font = 'bold 16px Inter, system-ui, sans-serif';
@@ -238,8 +260,8 @@ export default function TCPPage() {
       const isServerActive = currentStep >= 2 && currentStep <= 3;
       const clientStatus = steps[currentStep].clientStatus;
       const serverStatus = steps[currentStep].serverStatus;
-      drawNode(clientX, centerY, '客户端', 'Client', isClientActive, clientStatus);
-      drawNode(serverX, centerY, '服务端', 'Server', isServerActive, serverStatus);
+      drawNode(clientX, centerY, '客户端', 'Client', isClientActive, clientStatus, true);
+      drawNode(serverX, centerY, '服务端', 'Server', isServerActive, serverStatus, false);
 
       if (currentStep === 4) {
         context.fillStyle = '#10b981';
