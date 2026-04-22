@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 interface Packet { type: string; from: number; to: number; progress: number; delay: number; startTime: number; active: boolean; completed: boolean; }
-interface StepInfo { phase: string; icon: string; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
+interface StepInfo { phase: string; icon: React.ReactNode; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
 
 export default function BGPPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -15,11 +16,11 @@ export default function BGPPage() {
   useEffect(() => { if (typeof window !== 'undefined') { const savedMode = localStorage.getItem('darkMode'); if (savedMode !== null) setIsDarkMode(savedMode === 'true'); else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setIsDarkMode(prefersDark); } } }, []);
 
   const steps: StepInfo[] = [
-    { phase: '初始状态', icon: '📍', title: 'BGP 邻居前', description: '两台位于不同AS的BGP路由器准备建立邻居关系。AS 65001的R1与AS 65002的R2需要交换路由信息。', packets: [] },
-    { phase: 'TCP连接', icon: '🔌', title: 'TCP 三次握手', description: 'BGP使用TCP协议建立连接，端口号179。两个BGP邻居之间先建立TCP连接。', packets: [{ from: 0, to: 1, type: 'TCP', delay: 0 }] },
-    { phase: 'Open报文', icon: '📤', title: 'BGP Open 报文', description: 'TCP连接建立后，双方互相发送Open报文，交换AS号、Router ID、保持时间等参数，协商BGP会话参数。', packets: [{ from: 0, to: 1, type: 'Open', delay: 0 }, { from: 1, to: 0, type: 'Open', delay: 300 }] },
-    { phase: 'Update报文', icon: '🔄', title: 'BGP Update 报文', description: '邻居关系建立后，双方互相发送Update报文，交换路由信息（网络前缀、下一跳、路径属性等）。', packets: [{ from: 0, to: 1, type: 'Update', delay: 0 }] },
-    { phase: '完成', icon: '✅', title: 'BGP 邻居完成', description: 'BGP邻居关系建立完成，双方可以交换路由更新，实现跨AS的路由传递。', packets: [] },
+    { phase: '初始状态', icon: <Emoji label="📍" />, title: 'BGP 邻居前', description: '两台位于不同AS的BGP路由器准备建立邻居关系。AS 65001的R1与AS 65002的R2需要交换路由信息。', packets: [] },
+    { phase: 'TCP连接', icon: <Emoji label="🔌" />, title: 'TCP 三次握手', description: 'BGP使用TCP协议建立连接，端口号179。两个BGP邻居之间先建立TCP连接。', packets: [{ from: 0, to: 1, type: 'TCP', delay: 0 }] },
+    { phase: 'Open报文', icon: <Emoji label="📤" />, title: 'BGP Open 报文', description: 'TCP连接建立后，双方互相发送Open报文，交换AS号、Router ID、保持时间等参数，协商BGP会话参数。', packets: [{ from: 0, to: 1, type: 'Open', delay: 0 }, { from: 1, to: 0, type: 'Open', delay: 300 }] },
+    { phase: 'Update报文', icon: <Emoji label="🔄" />, title: 'BGP Update 报文', description: '邻居关系建立后，双方互相发送Update报文，交换路由信息（网络前缀、下一跳、路径属性等）。', packets: [{ from: 0, to: 1, type: 'Update', delay: 0 }] },
+    { phase: '完成', icon: <Emoji label="✅" />, title: 'BGP 邻居完成', description: 'BGP邻居关系建立完成，双方可以交换路由更新，实现跨AS的路由传递。', packets: [] },
   ];
 
   const packetColors: Record<string, { start: string; end: string }> = { 'TCP': { start: '#6b7280', end: '#4b5563' }, 'Open': { start: '#3b82f6', end: '#2563eb' }, 'Update': { start: '#10b981', end: '#059669' } };

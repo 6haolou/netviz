@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 
 interface Packet {
   type: string;
@@ -15,7 +16,7 @@ interface Packet {
 
 interface StepInfo {
   phase: string;
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
   packets: { from: number; to: number; type: string; delay: number }[];
@@ -45,44 +46,44 @@ export default function MSTPPage() {
   const steps: StepInfo[] = [
     {
       phase: '初始状态',
-      icon: '📍',
+      icon: <Emoji label="📍" />,
       title: 'MSTP 计算前',
-      description: '三台交换机配置相同的MSTP域名（AZURE）和VLAN映射。Instance 1映射VLAN 10，Instance 2映射VLAN 20。',
+      description: '三台交换机配置相同的 MSTP 域名（AZURE）和 VLAN 映射。Instance 1 映射 VLAN 10，Instance 2 映射 VLAN 20。',
       packets: [],
     },
     {
       phase: '域配置',
-      icon: '🔧',
+      icon: <Emoji label="🔧" />,
       title: 'MST 域配置',
-      description: '交换机配置相同的域名AZURE、修订级别0，并将VLAN 10映射到Instance 1，VLAN 20映射到Instance 2。',
+      description: '交换机配置相同的域名 AZURE、修订级别 0，并将 VLAN 10 映射到 Instance 1，VLAN 20 映射到 Instance 2。',
       packets: [{ from: 0, to: 1, type: 'MSTP', delay: 0 }, { from: 1, to: 2, type: 'MSTP', delay: 200 }],
     },
     {
-      phase: '实例1选举',
-      icon: '🔢',
+      phase: '实例 1 选举',
+      icon: <Emoji label="🔢" />,
       title: 'Instance 1 根桥选举',
-      description: '在Instance 1中，通过比较Bridge ID选举根桥。SW-A的优先级最低（4096）成为Instance 1的根桥，负责转发VLAN 10的流量。',
+      description: '在 Instance 1 中，通过比较 Bridge ID 选举根桥。SW-A 的优先级最低（4096）成为 Instance 1 的根桥，负责转发 VLAN 10 的流量。',
       packets: [{ from: 0, to: 1, type: 'MSTI-1', delay: 0 }, { from: 0, to: 2, type: 'MSTI-1', delay: 300 }],
     },
     {
-      phase: '实例2选举',
-      icon: '🔢',
+      phase: '实例 2 选举',
+      icon: <Emoji label="🔢" />,
       title: 'Instance 2 根桥选举',
-      description: '在Instance 2中，SW-C成为根桥（优先级4096），与Instance 1不同。这样VLAN 20的流量走另一条路径，实现负载均衡。',
+      description: '在 Instance 2 中，SW-C 成为根桥（优先级 4096），与 Instance 1 不同。这样 VLAN 20 的流量走另一条路径，实现负载均衡。',
       packets: [{ from: 2, to: 0, type: 'MSTI-2', delay: 0 }, { from: 2, to: 1, type: 'MSTI-2', delay: 300 }],
     },
     {
       phase: '端口角色',
-      icon: '🎯',
+      icon: <Emoji label="🎯" />,
       title: '端口角色确定',
       description: '根据两个实例的计算结果，确定每个端口的角色。不同实例可以有不同的端口状态，实现负载均衡。',
       packets: [],
     },
     {
       phase: '收敛完成',
-      icon: '✅',
+      icon: <Emoji label="✅" />,
       title: 'MSTP 收敛完成',
-      description: 'MSTP收敛完成，形成无环拓扑。Instance 1和Instance 2使用不同的转发路径，优化网络负载。',
+      description: 'MSTP 收敛完成，形成无环拓扑。Instance 1 和 Instance 2 使用不同的转发路径，优化网络负载。',
       packets: [],
     },
   ];
@@ -238,7 +239,7 @@ export default function MSTPPage() {
 
         context.fillStyle = 'rgba(255, 255, 255, 0.7)';
         context.font = '10px Inter, system-ui, sans-serif';
-        context.fillText('AZURE域', x, y + 120);
+        context.fillText('AZURE 域', x, y + 120);
 
         context.fillStyle = 'rgba(255, 255, 255, 0.5)';
         context.font = '9px Inter, system-ui, sans-serif';
@@ -466,10 +467,10 @@ export default function MSTPPage() {
                 <div className="text-xl font-bold" style={{ color: primaryBlue }}>{currentStep + 1} / {steps.length}</div>
               </div>
               <button onClick={handleReset} className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:opacity-80" style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', color: textColor }}>
-                🔄 重置
+                重置
               </button>
               <button onClick={handleNext} disabled={currentStep >= steps.length - 1} className="px-6 py-2 rounded-lg font-semibold text-sm transition-all disabled:opacity-50" style={{ backgroundColor: primaryBlue, color: 'white' }}>
-                下一步 →
+                下一步
               </button>
             </div>
           </div>
@@ -481,8 +482,8 @@ export default function MSTPPage() {
           <div className="rounded-xl border p-4 mb-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
             <h3 className="font-bold text-lg mb-3" style={{ color: primaryBlue }}>MSTP 多实例生成树协议（Multi-Spanning Tree Protocol）</h3>
             <p className="text-sm leading-relaxed" style={{ color: textColor }}>
-              <span style={{ color: primaryBlue, fontWeight: 600 }}>多实例：</span>MSTP将VLAN映射到不同的实例（Instance），每个实例独立计算生成树，实现负载均衡。<br/>
-              <span style={{ color: '#8b5cf6', fontWeight: 600 }}>MST域：</span>具有相同域名、修订级别和VLAN映射的交换机属于同一个MST域。<br/>
+              <span style={{ color: primaryBlue, fontWeight: 600 }}>多实例：</span>MSTP 将 VLAN 映射到不同的实例（Instance），每个实例独立计算生成树，实现负载均衡。<br/>
+              <span style={{ color: '#8b5cf6', fontWeight: 600 }}>MST 域：</span>具有相同域名、修订级别和 VLAN 映射的交换机属于同一个 MST 域。<br/>
               <span style={{ color: '#10b981', fontWeight: 600 }}>负载均衡：</span>不同实例选择不同的根桥，流量走不同路径，提高网络利用率。
             </p>
           </div>
@@ -555,18 +556,14 @@ export default function MSTPPage() {
 
               <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">📦</span>
-                  <div>
-                    <h4 className="font-bold">MSTP 报文日志</h4>
-                    <p className="text-xs" style={{ color: secondaryText }}>多实例生成树协议</p>
-                  </div>
+                  <span className="text-lg">报文日志</span>
                 </div>
 
                 <div className="rounded-lg p-3 overflow-y-auto" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)', maxHeight: '150px' }}>
                   {packetLogs.length === 0 ? (
                     <div className="flex items-center gap-2 text-sm" style={{ color: secondaryText }}>
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: secondaryText }} />
-                      <span>暂无MSTP报文</span>
+                      <span>暂无 MSTP 报文</span>
                     </div>
                   ) : (
                     packetLogs.map((log, index) => (
@@ -594,11 +591,11 @@ export default function MSTPPage() {
                   </div>
                   <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8b5cf6' }} />
-                    <span style={{ color: textColor }}>MST域名: AZURE</span>
+                    <span style={{ color: textColor }}>MST 域名：AZURE</span>
                   </div>
                   <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)' }}>
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#6b7280' }} />
-                    <span style={{ color: textColor }}>修订级别: 0</span>
+                    <span style={{ color: textColor }}>修订级别：0</span>
                   </div>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 
 interface Packet {
   type: string;
@@ -15,7 +16,7 @@ interface Packet {
 
 interface StepInfo {
   phase: string;
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
   packets: { from: number; to: number; type: string; delay: number }[];
@@ -39,11 +40,11 @@ export default function DNSPage() {
   }, []);
 
   const steps: StepInfo[] = [
-    { phase: '初始状态', icon: '📍', title: 'DNS 查询前', description: '客户端需要访问www.example.com，但只知道域名不知道IP地址，需要通过DNS获取。', packets: [] },
-    { phase: '递归查询', icon: '🔍', title: '发送给DNS服务器', description: '客户端将查询请求发送给本地DNS服务器，询问www.example.com的IP地址。', packets: [{ from: 0, to: 1, type: 'Query', delay: 0 }] },
-    { phase: '迭代查询', icon: '🌐', title: 'DNS服务器查询根域名', description: '本地DNS服务器没有答案，向根域名服务器查询。根服务器返回.com域名的顶级域名服务器地址。', packets: [{ from: 1, to: 2, type: 'Iterative', delay: 0 }] },
-    { phase: '返回结果', icon: '📥', title: '返回IP地址', description: '通过多级DNS服务器的协作，最终得到www.example.com的IP地址1.2.3.4，返回给客户端。', packets: [{ from: 2, to: 1, type: 'Answer', delay: 0 }, { from: 1, to: 0, type: 'Answer', delay: 300 }] },
-    { phase: '完成', icon: '✅', title: 'DNS 解析完成', description: '客户端获得IP地址1.2.3.4，可以建立HTTP连接了！', packets: [] },
+    { phase: '初始状态', icon: <Emoji label="📍" />, title: 'DNS 查询前', description: '客户端需要访问www.example.com，但只知道域名不知道IP地址，需要通过DNS获取。', packets: [] },
+    { phase: '递归查询', icon: <Emoji label="🔍" />, title: '发送给DNS服务器', description: '客户端将查询请求发送给本地DNS服务器，询问www.example.com的IP地址。', packets: [{ from: 0, to: 1, type: 'Query', delay: 0 }] },
+    { phase: '迭代查询', icon: <Emoji label="🌐" />, title: 'DNS服务器查询根域名', description: '本地DNS服务器没有答案，向根域名服务器查询。根服务器返回.com域名的顶级域名服务器地址。', packets: [{ from: 1, to: 2, type: 'Iterative', delay: 0 }] },
+    { phase: '返回结果', icon: <Emoji label="📥" />, title: '返回IP地址', description: '通过多级DNS服务器的协作，最终得到www.example.com的IP地址1.2.3.4，返回给客户端。', packets: [{ from: 2, to: 1, type: 'Answer', delay: 0 }, { from: 1, to: 0, type: 'Answer', delay: 300 }] },
+    { phase: '完成', icon: <Emoji label="✅" />, title: 'DNS 解析完成', description: '客户端获得IP地址1.2.3.4，可以建立HTTP连接了！', packets: [] },
   ];
 
   const packetColors: Record<string, { start: string; end: string }> = {

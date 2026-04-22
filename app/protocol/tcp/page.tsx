@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 
 interface Packet {
   type: string;
@@ -15,7 +16,7 @@ interface Packet {
 
 interface StepInfo {
   phase: string;
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
   packets: { from: number; to: number; type: string; delay: number }[];
@@ -45,35 +46,35 @@ export default function TCPPage() {
   const steps: StepInfo[] = [
     {
       phase: 'Initial',
-      icon: '[ ]',
+      icon: <Emoji label="[ ]" />,
       title: 'TCP 连接前',
       description: '客户端发起连接请求，服务端处于 LISTEN 状态，等待客户端的连接请求。',
       packets: [],
     },
     {
       phase: 'SYN',
-      icon: 'SYN',
+      icon: <Emoji label="SYN" />,
       title: 'SYN 同步请求',
       description: '客户端发送 SYN 报文（同步标志），请求建立连接。客户端随机选择一个初始序列号 (ISN)。',
       packets: [{ from: 0, to: 1, type: 'SYN', delay: 0 }],
     },
     {
       phase: 'SYN-ACK',
-      icon: 'ACK',
+      icon: <Emoji label="ACK" />,
       title: 'SYN-ACK 同步确认',
       description: '服务端收到 SYN 后，发送 SYN-ACK 报文作为响应。确认收到客户端的 SYN，并发送自己的 SYN。',
       packets: [{ from: 1, to: 0, type: 'SYN-ACK', delay: 0 }],
     },
     {
       phase: 'ACK',
-      icon: 'ACK',
+      icon: <Emoji label="ACK" />,
       title: 'ACK 确认完成',
       description: '客户端收到 SYN-ACK 后，发送 ACK 确认报文。连接建立完成，双方可以开始传输数据。',
       packets: [{ from: 0, to: 1, type: 'ACK', delay: 0 }],
     },
     {
       phase: 'OK',
-      icon: '[OK]',
+      icon: <Emoji label="[OK]" />,
       title: 'TCP 连接完成',
       description: '三次握手完成，TCP 连接成功建立！双方进入 ESTABLISHED 状态，可以开始数据传输。',
       packets: [],

@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 interface Packet { type: string; from: number; to: number; progress: number; delay: number; startTime: number; active: boolean; completed: boolean; }
-interface StepInfo { phase: string; icon: string; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
+interface StepInfo { phase: string; icon: React.ReactNode; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
 
 export default function IPPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -15,11 +16,11 @@ export default function IPPage() {
   useEffect(() => { if (typeof window !== 'undefined') { const savedMode = localStorage.getItem('darkMode'); if (savedMode !== null) setIsDarkMode(savedMode === 'true'); else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setIsDarkMode(prefersDark); } } }, []);
 
   const steps: StepInfo[] = [
-    { phase: '初始状态', icon: '📍', title: 'IP 路由前', description: '主机A（192.168.1.10）需要向主机B（192.168.2.20）发送数据，需要通过路由器转发。', packets: [] },
-    { phase: '路由查找', icon: '🔍', title: '查找路由表', description: '主机A检查目的IP发现不在同一网段，将数据包发送给默认网关（路由器R1）。', packets: [{ from: 0, to: 1, type: 'IP Packet', delay: 0 }] },
-    { phase: '路由器转发', icon: '🔄', title: '路由器转发', description: '路由器R1收到数据包，查找路由表，发现目的网络192.168.2.0/24，下一跳从G0/1接口发出。', packets: [{ from: 1, to: 2, type: 'IP Packet', delay: 0 }] },
-    { phase: '到达目标', icon: '📥', title: '数据包到达', description: '数据包成功到达主机B（192.168.2.20）。路由器根据TTL减少数据包的生命周期。', packets: [] },
-    { phase: '完成', icon: '✅', title: 'IP 路由完成', description: 'IP路由转发完成！数据包从源地址成功到达目的地址，经过路由器的层层转发。', packets: [] },
+    { phase: '初始状态', icon: <Emoji label="📍" />, title: 'IP 路由前', description: '主机A（192.168.1.10）需要向主机B（192.168.2.20）发送数据，需要通过路由器转发。', packets: [] },
+    { phase: '路由查找', icon: <Emoji label="🔍" />, title: '查找路由表', description: '主机A检查目的IP发现不在同一网段，将数据包发送给默认网关（路由器R1）。', packets: [{ from: 0, to: 1, type: 'IP Packet', delay: 0 }] },
+    { phase: '路由器转发', icon: <Emoji label="🔄" />, title: '路由器转发', description: '路由器R1收到数据包，查找路由表，发现目的网络192.168.2.0/24，下一跳从G0/1接口发出。', packets: [{ from: 1, to: 2, type: 'IP Packet', delay: 0 }] },
+    { phase: '到达目标', icon: <Emoji label="📥" />, title: '数据包到达', description: '数据包成功到达主机B（192.168.2.20）。路由器根据TTL减少数据包的生命周期。', packets: [] },
+    { phase: '完成', icon: <Emoji label="✅" />, title: 'IP 路由完成', description: 'IP路由转发完成！数据包从源地址成功到达目的地址，经过路由器的层层转发。', packets: [] },
   ];
 
   const packetColors: Record<string, { start: string; end: string }> = { 'IP Packet': { start: '#3b82f6', end: '#2563eb' } };

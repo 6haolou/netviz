@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 
 interface Packet {
   type: string;
@@ -15,7 +16,7 @@ interface Packet {
 
 interface StepInfo {
   phase: string;
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
   packets: { from: number; to: number; type: string; delay: number }[];
@@ -45,35 +46,35 @@ export default function HTTPPage() {
   const steps: StepInfo[] = [
     {
       phase: '初始状态',
-      icon: '📍',
+      icon: <Emoji label="📍" />,
       title: 'HTTP 请求前',
       description: '客户端准备向服务器发送HTTP请求，获取网页内容。',
       packets: [],
     },
     {
       phase: '建立连接',
-      icon: '🔌',
+      icon: <Emoji label="🔌" />,
       title: 'TCP 连接建立',
       description: '客户端与服务端通过三次握手建立TCP连接，确保数据传输的可靠性。',
       packets: [{ from: 0, to: 1, type: 'TCP', delay: 0 }],
     },
     {
       phase: '发送请求',
-      icon: '📤',
+      icon: <Emoji label="📤" />,
       title: 'HTTP GET 请求',
       description: '客户端发送HTTP GET请求，请求获取/index.html页面内容。',
       packets: [{ from: 0, to: 1, type: 'GET', delay: 0 }],
     },
     {
       phase: '返回响应',
-      icon: '📥',
+      icon: <Emoji label="📥" />,
       title: 'HTTP 200 OK',
       description: '服务器返回200 OK状态码，以及请求的HTML页面内容。',
       packets: [{ from: 1, to: 0, type: '200 OK', delay: 0 }],
     },
     {
       phase: '完成',
-      icon: '✅',
+      icon: <Emoji label="✅" />,
       title: 'HTTP 请求完成',
       description: '客户端收到响应，HTTP请求-响应周期完成。',
       packets: [],

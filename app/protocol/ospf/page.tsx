@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 interface Packet { type: string; from: number; to: number; progress: number; delay: number; startTime: number; active: boolean; completed: boolean; }
-interface StepInfo { phase: string; icon: string; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
+interface StepInfo { phase: string; icon: React.ReactNode; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
 
 export default function OSPFPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -15,12 +16,12 @@ export default function OSPFPage() {
   useEffect(() => { if (typeof window !== 'undefined') { const savedMode = localStorage.getItem('darkMode'); if (savedMode !== null) setIsDarkMode(savedMode === 'true'); else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setIsDarkMode(prefersDark); } } }, []);
 
   const steps: StepInfo[] = [
-    { phase: '初始状态', icon: '📍', title: 'OSPF 邻居前', description: '两台OSPF路由器配置相同的区域(Area 0)，准备建立邻居关系。Router ID分别为1.1.1.1和2.2.2.2。', packets: [] },
-    { phase: '邻居发现', icon: '🔍', title: '发送 Hello 报文', description: '路由器R1和R2互相发送Hello报文，发现彼此并协商邻居关系。', packets: [{ from: 0, to: 1, type: 'Hello', delay: 0 }, { from: 1, to: 0, type: 'Hello', delay: 300 }] },
-    { phase: '交换信息', icon: '🔄', title: 'DD 报文交互', description: '邻居关系建立后，互相交换DD（Database Description）报文，包含各自的链路状态摘要。', packets: [{ from: 0, to: 1, type: 'DD', delay: 0 }, { from: 1, to: 0, type: 'DD', delay: 300 }] },
-    { phase: '请求更新', icon: '📤', title: 'LSR 请求', description: '路由器发现自己的链路状态数据库与邻居不一致，发送LSR（Link State Request）请求缺失的LSA。', packets: [{ from: 0, to: 1, type: 'LSR', delay: 0 }] },
-    { phase: '泛洪更新', icon: '📥', title: 'LSU 泛洪', description: '邻居路由器发送LSU（Link State Update）报文，包含完整的LSA信息，同步链路状态数据库。', packets: [{ from: 1, to: 0, type: 'LSU', delay: 0 }] },
-    { phase: '完成', icon: '✅', title: 'OSPF 邻居完成', description: '双方链路状态数据库同步，OSPF邻居关系建立完成，进入Full状态。', packets: [] },
+    { phase: '初始状态', icon: <Emoji label="📍" />, title: 'OSPF 邻居前', description: '两台OSPF路由器配置相同的区域(Area 0)，准备建立邻居关系。Router ID分别为1.1.1.1和2.2.2.2。', packets: [] },
+    { phase: '邻居发现', icon: <Emoji label="🔍" />, title: '发送 Hello 报文', description: '路由器R1和R2互相发送Hello报文，发现彼此并协商邻居关系。', packets: [{ from: 0, to: 1, type: 'Hello', delay: 0 }, { from: 1, to: 0, type: 'Hello', delay: 300 }] },
+    { phase: '交换信息', icon: <Emoji label="🔄" />, title: 'DD 报文交互', description: '邻居关系建立后，互相交换DD（Database Description）报文，包含各自的链路状态摘要。', packets: [{ from: 0, to: 1, type: 'DD', delay: 0 }, { from: 1, to: 0, type: 'DD', delay: 300 }] },
+    { phase: '请求更新', icon: <Emoji label="📤" />, title: 'LSR 请求', description: '路由器发现自己的链路状态数据库与邻居不一致，发送LSR（Link State Request）请求缺失的LSA。', packets: [{ from: 0, to: 1, type: 'LSR', delay: 0 }] },
+    { phase: '泛洪更新', icon: <Emoji label="📥" />, title: 'LSU 泛洪', description: '邻居路由器发送LSU（Link State Update）报文，包含完整的LSA信息，同步链路状态数据库。', packets: [{ from: 1, to: 0, type: 'LSU', delay: 0 }] },
+    { phase: '完成', icon: <Emoji label="✅" />, title: 'OSPF 邻居完成', description: '双方链路状态数据库同步，OSPF邻居关系建立完成，进入Full状态。', packets: [] },
   ];
 
   const packetColors: Record<string, { start: string; end: string }> = { 'Hello': { start: '#3b82f6', end: '#2563eb' }, 'DD': { start: '#8b5cf6', end: '#7c3aed' }, 'LSR': { start: '#f59e0b', end: '#d97706' }, 'LSU': { start: '#10b981', end: '#059669' } };

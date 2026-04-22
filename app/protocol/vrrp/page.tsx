@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 
 interface Packet {
   type: string;
@@ -15,7 +16,7 @@ interface Packet {
 
 interface StepInfo {
   phase: string;
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
   packets: { from: number; to: number; type: string; delay: number }[];
@@ -45,35 +46,35 @@ export default function VRRPPage() {
   const steps: StepInfo[] = [
     {
       phase: '初始状态',
-      icon: '📍',
+      icon: <Emoji label="📍" />,
       title: 'VRRP 配置',
       description: '两台路由器R1和R2配置了相同的VRRP虚拟路由器，虚拟IP地址为192.168.1.254。优先级R1=100，R2=80。',
       packets: [],
     },
     {
       phase: 'Master选举',
-      icon: '👑',
+      icon: <Emoji label="👑" />,
       title: 'VRRP Master 选举',
       description: 'VRRP组播Hello报文交互，根据优先级选举Master路由器。优先级高的R1成为Master，负责转发虚拟IP的流量。',
       packets: [{ from: 0, to: 1, type: 'Hello', delay: 0 }],
     },
     {
       phase: 'Master工作',
-      icon: '✅',
+      icon: <Emoji label="✅" />,
       title: 'Master 转发流量',
       description: 'R1作为Master发送ARP响应，宣告虚拟MAC地址00-00-5E-00-01-01。主机将流量发送到虚拟IP。',
       packets: [{ from: 0, to: 2, type: 'ARP', delay: 0 }],
     },
     {
       phase: '故障切换',
-      icon: '⚠️',
+      icon: <Emoji label="⚠️" />,
       title: 'Master 故障',
       description: 'R1（Master）发生故障，停止发送Hello报文。R2检测到超时，自动切换为Master。',
       packets: [],
     },
     {
       phase: '切换完成',
-      icon: '🔄',
+      icon: <Emoji label="🔄" />,
       title: 'R2 升为 Master',
       description: 'R2接替成为新的Master，继续转发虚拟IP的流量。实现网关冗余备份，保障网络连通性。',
       packets: [{ from: 1, to: 2, type: 'ARP', delay: 0 }],

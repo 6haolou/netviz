@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 interface Packet { type: string; from: number; to: number; progress: number; delay: number; startTime: number; active: boolean; completed: boolean; }
-interface StepInfo { phase: string; icon: string; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
+interface StepInfo { phase: string; icon: React.ReactNode; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
 
 export default function ICMPPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -15,10 +16,10 @@ export default function ICMPPage() {
   useEffect(() => { if (typeof window !== 'undefined') { const savedMode = localStorage.getItem('darkMode'); if (savedMode !== null) setIsDarkMode(savedMode === 'true'); else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setIsDarkMode(prefersDark); } } }, []);
 
   const steps: StepInfo[] = [
-    { phase: '初始状态', icon: '📍', title: 'Ping 测试前', description: '主机A准备测试与主机B的连通性，发送ICMP回显请求测试网络是否通畅。', packets: [] },
-    { phase: '发送请求', icon: '📤', title: 'Echo Request', description: '主机A发送ICMP Echo Request（回显请求），请求主机B回应。', packets: [{ from: 0, to: 1, type: 'Echo Request', delay: 0 }] },
-    { phase: '返回响应', icon: '📥', title: 'Echo Reply', description: '主机B收到请求后，发送ICMP Echo Reply（回显响应），表示主机可达。', packets: [{ from: 1, to: 0, type: 'Echo Reply', delay: 0 }] },
-    { phase: '完成', icon: '✅', title: 'Ping 测试完成', description: '主机A收到Echo Reply，测试成功！往返时间RTT=24ms，网络延迟正常。', packets: [] },
+    { phase: '初始状态', icon: <Emoji label="📍" />, title: 'Ping 测试前', description: '主机A准备测试与主机B的连通性，发送ICMP回显请求测试网络是否通畅。', packets: [] },
+    { phase: '发送请求', icon: <Emoji label="📤" />, title: 'Echo Request', description: '主机A发送ICMP Echo Request（回显请求），请求主机B回应。', packets: [{ from: 0, to: 1, type: 'Echo Request', delay: 0 }] },
+    { phase: '返回响应', icon: <Emoji label="📥" />, title: 'Echo Reply', description: '主机B收到请求后，发送ICMP Echo Reply（回显响应），表示主机可达。', packets: [{ from: 1, to: 0, type: 'Echo Reply', delay: 0 }] },
+    { phase: '完成', icon: <Emoji label="✅" />, title: 'Ping 测试完成', description: '主机A收到Echo Reply，测试成功！往返时间RTT=24ms，网络延迟正常。', packets: [] },
   ];
 
   const packetColors: Record<string, { start: string; end: string }> = { 'Echo Request': { start: '#3b82f6', end: '#2563eb' }, 'Echo Reply': { start: '#10b981', end: '#059669' } };

@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 interface Packet { type: string; from: number; to: number; progress: number; delay: number; startTime: number; active: boolean; completed: boolean; }
-interface StepInfo { phase: string; icon: string; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
+interface StepInfo { phase: string; icon: React.ReactNode; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
 
 export default function RIPPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -15,11 +16,11 @@ export default function RIPPage() {
   useEffect(() => { if (typeof window !== 'undefined') { const savedMode = localStorage.getItem('darkMode'); if (savedMode !== null) setIsDarkMode(savedMode === 'true'); else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setIsDarkMode(prefersDark); } } }, []);
 
   const steps: StepInfo[] = [
-    { phase: '初始状态', icon: '📍', title: 'RIP 路由前', description: '三台路由器R1、R2、R3配置了RIP协议，30秒更新计时器即将触发首次路由更新。', packets: [] },
-    { phase: '路由请求', icon: '📤', title: 'RIP Request 报文', description: 'RIP路由器发送Request报文，请求邻居路由器发送完整的路由表。', packets: [{ from: 0, to: 1, type: 'Request', delay: 0 }] },
-    { phase: '路由响应', icon: '📥', title: 'RIP Response 报文', description: 'R2收到Request后，发送Response报文，包含其路由表中的路由条目（目的网络、跳数）。', packets: [{ from: 1, to: 0, type: 'Response', delay: 0 }] },
-    { phase: '路由学习', icon: '📚', title: '路由表更新', description: 'R1收到R2的路由信息后，更新自己的路由表，学习到192.168.3.0/24网络（跳数=2）。', packets: [] },
-    { phase: '完成', icon: '✅', title: 'RIP 收敛完成', description: 'RIP路由器之间周期性交换路由更新（每30秒一次），最终所有路由器的路由表一致。', packets: [] },
+    { phase: '初始状态', icon: <Emoji label="📍" />, title: 'RIP 路由前', description: '三台路由器R1、R2、R3配置了RIP协议，30秒更新计时器即将触发首次路由更新。', packets: [] },
+    { phase: '路由请求', icon: <Emoji label="📤" />, title: 'RIP Request 报文', description: 'RIP路由器发送Request报文，请求邻居路由器发送完整的路由表。', packets: [{ from: 0, to: 1, type: 'Request', delay: 0 }] },
+    { phase: '路由响应', icon: <Emoji label="📥" />, title: 'RIP Response 报文', description: 'R2收到Request后，发送Response报文，包含其路由表中的路由条目（目的网络、跳数）。', packets: [{ from: 1, to: 0, type: 'Response', delay: 0 }] },
+    { phase: '路由学习', icon: <Emoji label="📚" />, title: '路由表更新', description: 'R1收到R2的路由信息后，更新自己的路由表，学习到192.168.3.0/24网络（跳数=2）。', packets: [] },
+    { phase: '完成', icon: <Emoji label="✅" />, title: 'RIP 收敛完成', description: 'RIP路由器之间周期性交换路由更新（每30秒一次），最终所有路由器的路由表一致。', packets: [] },
   ];
 
   const packetColors: Record<string, { start: string; end: string }> = { 'Request': { start: '#3b82f6', end: '#2563eb' }, 'Response': { start: '#10b981', end: '#059669' } };

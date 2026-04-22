@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 interface Packet { type: string; from: number; to: number; progress: number; delay: number; startTime: number; active: boolean; completed: boolean; }
-interface StepInfo { phase: string; icon: string; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
+interface StepInfo { phase: string; icon: React.ReactNode; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
 
 export default function ARPPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -21,10 +22,10 @@ export default function ARPPage() {
   }, []);
 
   const steps: StepInfo[] = [
-    { phase: '初始状态', icon: '📍', title: 'ARP 请求前', description: '主机A需要向主机B发送数据，但只知道主机B的IP地址192.168.1.200，不知道其MAC地址。', packets: [] },
-    { phase: '广播请求', icon: '📢', title: 'ARP 广播请求', description: '主机A发送ARP请求报文（广播），询问IP地址192.168.1.200对应的MAC地址。所有在同一网段的主机都能收到。', packets: [{ from: 0, to: 1, type: 'ARP Request', delay: 0 }] },
-    { phase: '单播响应', icon: '📥', title: 'ARP 单播响应', description: '主机B收到ARP请求后，发送ARP响应报文（单播），告诉主机A自己的MAC地址是00:0c:29:aa:bb:cc。', packets: [{ from: 1, to: 0, type: 'ARP Response', delay: 0 }] },
-    { phase: '完成', icon: '✅', title: 'ARP 解析完成', description: '主机A获得了主机B的MAC地址，可以封装以太网帧进行通信了！', packets: [] },
+    { phase: '初始状态', icon: <Emoji label="📍" />, title: 'ARP 请求前', description: '主机A需要向主机B发送数据，但只知道主机B的IP地址192.168.1.200，不知道其MAC地址。', packets: [] },
+    { phase: '广播请求', icon: <Emoji label="📢" />, title: 'ARP 广播请求', description: '主机A发送ARP请求报文（广播），询问IP地址192.168.1.200对应的MAC地址。所有在同一网段的主机都能收到。', packets: [{ from: 0, to: 1, type: 'ARP Request', delay: 0 }] },
+    { phase: '单播响应', icon: <Emoji label="📥" />, title: 'ARP 单播响应', description: '主机B收到ARP请求后，发送ARP响应报文（单播），告诉主机A自己的MAC地址是00:0c:29:aa:bb:cc。', packets: [{ from: 1, to: 0, type: 'ARP Response', delay: 0 }] },
+    { phase: '完成', icon: <Emoji label="✅" />, title: 'ARP 解析完成', description: '主机A获得了主机B的MAC地址，可以封装以太网帧进行通信了！', packets: [] },
   ];
 
   const packetColors: Record<string, { start: string; end: string }> = {

@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Emoji from '@/components/Emoji';
 interface Packet { type: string; from: number; to: number; progress: number; delay: number; startTime: number; active: boolean; completed: boolean; }
-interface StepInfo { phase: string; icon: string; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
+interface StepInfo { phase: string; icon: React.ReactNode; title: string; description: string; packets: { from: number; to: number; type: string; delay: number }[]; }
 
 export default function STPPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -15,12 +16,12 @@ export default function STPPage() {
   useEffect(() => { if (typeof window !== 'undefined') { const savedMode = localStorage.getItem('darkMode'); if (savedMode !== null) setIsDarkMode(savedMode === 'true'); else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setIsDarkMode(prefersDark); } } }, []);
 
   const steps: StepInfo[] = [
-    { phase: '初始状态', icon: '📍', title: 'STP 计算前', description: '所有交换机启动后，交换机之间通过STP协议选举根桥。需要比较Bridge ID（优先级+MAC地址）。', packets: [] },
-    { phase: '根桥选举', icon: '👑', title: '选举根桥（Root Bridge）', description: '所有交换机发送BPDU，比较Bridge ID。优先级最低（默认32768）的成为根桥。如果优先级相同，则MAC地址最小的胜出。', packets: [{ from: 0, to: 1, type: 'BPDU', delay: 0 }] },
-    { phase: '根端口选举', icon: '🔌', title: '选举根端口（Root Port）', description: '非根桥交换机选择到根桥路径成本最低的端口作为根端口。每个非根桥只有一个根端口。', packets: [{ from: 1, to: 2, type: 'BPDU', delay: 0 }] },
-    { phase: '指定端口选举', icon: '🎯', title: '选举指定端口（Designated Port）', description: '每个网段选举一个指定端口，用于转发数据。根桥的所有端口都是指定端口。', packets: [{ from: 2, to: 3, type: 'BPDU', delay: 0 }] },
-    { phase: '阻塞端口', icon: '🚫', title: '阻塞非指定端口', description: '除了根端口和指定端口外的其他端口被阻塞，进入Blocking状态，打破二层环路。', packets: [] },
-    { phase: '收敛完成', icon: '✅', title: 'STP 收敛完成', description: '网络收敛完成，形成无环的树形拓扑。根桥为树的根节点，流量沿最优路径转发。', packets: [] },
+    { phase: '初始状态', icon: <Emoji label="📍" />, title: 'STP 计算前', description: '所有交换机启动后，交换机之间通过STP协议选举根桥。需要比较Bridge ID（优先级+MAC地址）。', packets: [] },
+    { phase: '根桥选举', icon: <Emoji label="👑" />, title: '选举根桥（Root Bridge）', description: '所有交换机发送BPDU，比较Bridge ID。优先级最低（默认32768）的成为根桥。如果优先级相同，则MAC地址最小的胜出。', packets: [{ from: 0, to: 1, type: 'BPDU', delay: 0 }] },
+    { phase: '根端口选举', icon: <Emoji label="🔌" />, title: '选举根端口（Root Port）', description: '非根桥交换机选择到根桥路径成本最低的端口作为根端口。每个非根桥只有一个根端口。', packets: [{ from: 1, to: 2, type: 'BPDU', delay: 0 }] },
+    { phase: '指定端口选举', icon: <Emoji label="🎯" />, title: '选举指定端口（Designated Port）', description: '每个网段选举一个指定端口，用于转发数据。根桥的所有端口都是指定端口。', packets: [{ from: 2, to: 3, type: 'BPDU', delay: 0 }] },
+    { phase: '阻塞端口', icon: <Emoji label="🚫" />, title: '阻塞非指定端口', description: '除了根端口和指定端口外的其他端口被阻塞，进入Blocking状态，打破二层环路。', packets: [] },
+    { phase: '收敛完成', icon: <Emoji label="✅" />, title: 'STP 收敛完成', description: '网络收敛完成，形成无环的树形拓扑。根桥为树的根节点，流量沿最优路径转发。', packets: [] },
   ];
 
   const packetColors: Record<string, { start: string; end: string }> = { 'BPDU': { start: '#3b82f6', end: '#2563eb' } };
