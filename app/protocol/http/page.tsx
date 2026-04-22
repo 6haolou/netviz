@@ -56,31 +56,17 @@ export default function HTTPPage() {
       packets: [],
     },
     {
-      phase: 'TCP 握手 1',
-      icon: <Emoji label="SYN" />,
-      title: 'TCP 第一次握手：SYN 同步',
-      description: '客户端发送 SYN 报文（seq=x），请求建立连接。客户端进入 SYN_SENT 状态。这是 TCP 三次握手的第一步。',
-      clientStatus: 'SYN_SENT',
-      serverStatus: 'LISTEN',
-      packets: [{ from: 0, to: 1, type: 'SYN', delay: 0 }],
-    },
-    {
-      phase: 'TCP 握手 2',
-      icon: <Emoji label="SYN+ACK" />,
-      title: 'TCP 第二次握手：SYN+ACK 确认',
-      description: '服务器收到 SYN 后，回复 SYN+ACK 报文（ack=x+1, seq=y），确认客户端的 SYN 请求。服务器进入 SYN_RCVD 状态。',
-      clientStatus: 'SYN_SENT',
-      serverStatus: 'SYN_RCVD',
-      packets: [{ from: 1, to: 0, type: 'SYN+ACK', delay: 0 }],
-    },
-    {
-      phase: 'TCP 握手 3',
-      icon: <Emoji label="ACK" />,
-      title: 'TCP 第三次握手：ACK 确认',
-      description: '客户端收到 SYN+ACK 后，发送 ACK 报文（ack=y+1）进行确认。双方都进入 ESTABLISHED 状态，TCP 连接建立完成。',
+      phase: 'TCP 连接',
+      icon: <Emoji label="TCP" />,
+      title: 'TCP 三次握手建立连接',
+      description: '在发送 HTTP 请求前，需要先通过 TCP 三次握手建立可靠连接：(1) 客户端发送 SYN 报文；(2) 服务器回复 SYN+ACK；(3) 客户端再回复 ACK。连接建立后双方进入 ESTABLISHED 状态。',
       clientStatus: 'ESTABLISHED',
       serverStatus: 'ESTABLISHED',
-      packets: [{ from: 0, to: 1, type: 'ACK', delay: 0 }],
+      packets: [
+        { from: 0, to: 1, type: 'SYN', delay: 0 },
+        { from: 1, to: 0, type: 'SYN+ACK', delay: 500 },
+        { from: 0, to: 1, type: 'ACK', delay: 1000 },
+      ],
     },
     {
       phase: '发送请求',
@@ -193,181 +179,335 @@ export default function HTTPPage() {
         }
       }
 
-      const clientX = width * 0.25;
-      const serverX = width * 0.75;
-      const centerY = height * 0.5;
+      // TCP 三次握手步骤：绘制 3 组客户端和服务器，垂直排列
+      if (currentStep === 1) {
+        const clientX = width * 0.25;
+        const serverX = width * 0.75;
+        const rowHeight = height / 3;
+        
+        // 绘制 3 行，每行展示一次握手
+        const rowPositions = [
+          { y: rowHeight * 0.3, label: '第一次握手' },
+          { y: rowHeight * 1.3, label: '第二次握手' },
+          { y: rowHeight * 2.3, label: '第三次握手' },
+        ];
 
-      context.strokeStyle = isDarkMode ? '#374151' : '#e5e7eb';
-      context.lineWidth = 3;
-      context.setLineDash([5, 5]);
-      context.beginPath();
-      context.moveTo(clientX + 60, centerY);
-      context.lineTo(serverX - 60, centerY);
-      context.stroke();
-      context.setLineDash([]);
+        rowPositions.forEach((row, rowIndex) => {
+          // 绘制时间线（虚线）
+          context.strokeStyle = isDarkMode ? '#4b5563' : '#d1d5db';
+          context.lineWidth = 2;
+          context.setLineDash([5, 5]);
+          context.beginPath();
+          context.moveTo(clientX, row.y - 60);
+          context.lineTo(clientX, row.y + 100);
+          context.stroke();
+          context.beginPath();
+          context.moveTo(serverX, row.y - 60);
+          context.lineTo(serverX, row.y + 100);
+          context.stroke();
+          context.setLineDash([]);
 
-      const drawNode = (x: number, y: number, label: string, sublabel: string, isActive: boolean, status?: string, isClient?: boolean) => {
-        const pulse = Math.sin(timeRef.current * 3) * 4;
-        const color = isClient ? '#3b82f6' : '#8b5cf6';
+          // 绘制客户端图标（简化版）
+          const clientColor = '#3b82f6';
+          context.fillStyle = clientColor;
+          context.fillRect(clientX - 30, row.y - 50, 60, 40);
+          context.fillStyle = 'white';
+          context.font = 'bold 12px Inter, system-ui, sans-serif';
+          context.textAlign = 'center';
+          context.fillText('客户端', clientX, row.y - 70);
 
-        if (isActive) {
-          const glowGradient = context.createRadialGradient(x, y, 40, x, y, 80 + pulse);
-          glowGradient.addColorStop(0, color + '40');
+          // 绘制服务器图标（简化版）
+          const serverColor = '#8b5cf6';
+          context.fillStyle = serverColor;
+          context.fillRect(serverX - 30, row.y - 50, 60, 40);
+          context.fillStyle = 'white';
+          context.fillText('服务器', serverX, row.y - 70);
+
+          // 根据行号绘制对应的报文
+          const now = Date.now();
+          const packetDelay = rowIndex * 500;
+          
+          if (rowIndex === 0) { // 第一次握手：SYN
+            const packet = packets.find(p => p.type === 'SYN');
+            const progress = packet && now >= packet.startTime ? Math.min(1, (now - packet.startTime) / 800) : 0;
+            
+            if (progress > 0) {
+              const fromX = clientX;
+              const toX = serverX;
+              const headX = fromX + (toX - fromX) * progress;
+              const tailProgress = Math.max(0, progress - 0.1);
+              const tailX = fromX + (toX - fromX) * tailProgress;
+              
+              const colors = packetColors['SYN'];
+              context.strokeStyle = colors.start;
+              context.lineWidth = 3;
+              context.lineCap = 'round';
+              context.beginPath();
+              context.moveTo(tailX, row.y);
+              context.lineTo(headX, row.y);
+              context.stroke();
+              
+              // 箭头
+              const arrowSize = 10;
+              context.fillStyle = colors.start;
+              context.beginPath();
+              context.moveTo(headX, row.y);
+              context.lineTo(headX - arrowSize * Math.cos(Math.PI / 6), row.y - arrowSize * Math.sin(Math.PI / 6));
+              context.lineTo(headX - arrowSize * Math.cos(Math.PI / 6), row.y + arrowSize * Math.sin(Math.PI / 6));
+              context.closePath();
+              context.fill();
+              
+              // 报文标签
+              context.fillStyle = 'white';
+              context.font = 'bold 11px Inter, system-ui, sans-serif';
+              context.fillText('SYN', (tailX + headX) / 2, row.y - 8);
+            }
+          } else if (rowIndex === 1) { // 第二次握手：SYN+ACK
+            const packet = packets.find(p => p.type === 'SYN+ACK');
+            const progress = packet && now >= packet.startTime ? Math.min(1, (now - packet.startTime) / 800) : 0;
+            
+            if (progress > 0) {
+              const fromX = serverX;
+              const toX = clientX;
+              const headX = fromX + (toX - fromX) * progress;
+              const tailProgress = Math.max(0, progress - 0.1);
+              const tailX = fromX + (toX - fromX) * tailProgress;
+              
+              const colors = packetColors['SYN+ACK'];
+              context.strokeStyle = colors.start;
+              context.lineWidth = 3;
+              context.lineCap = 'round';
+              context.beginPath();
+              context.moveTo(tailX, row.y);
+              context.lineTo(headX, row.y);
+              context.stroke();
+              
+              const arrowSize = 10;
+              context.fillStyle = colors.start;
+              context.beginPath();
+              context.moveTo(headX, row.y);
+              context.lineTo(headX - arrowSize * Math.cos(Math.PI / 6), row.y - arrowSize * Math.sin(Math.PI / 6));
+              context.lineTo(headX - arrowSize * Math.cos(Math.PI / 6), row.y + arrowSize * Math.sin(Math.PI / 6));
+              context.closePath();
+              context.fill();
+              
+              context.fillStyle = 'white';
+              context.font = 'bold 11px Inter, system-ui, sans-serif';
+              context.fillText('SYN+ACK', (tailX + headX) / 2, row.y - 8);
+            }
+          } else if (rowIndex === 2) { // 第三次握手：ACK
+            const packet = packets.find(p => p.type === 'ACK');
+            const progress = packet && now >= packet.startTime ? Math.min(1, (now - packet.startTime) / 800) : 0;
+            
+            if (progress > 0) {
+              const fromX = clientX;
+              const toX = serverX;
+              const headX = fromX + (toX - fromX) * progress;
+              const tailProgress = Math.max(0, progress - 0.1);
+              const tailX = fromX + (toX - fromX) * tailProgress;
+              
+              const colors = packetColors['ACK'];
+              context.strokeStyle = colors.start;
+              context.lineWidth = 3;
+              context.lineCap = 'round';
+              context.beginPath();
+              context.moveTo(tailX, row.y);
+              context.lineTo(headX, row.y);
+              context.stroke();
+              
+              const arrowSize = 10;
+              context.fillStyle = colors.start;
+              context.beginPath();
+              context.moveTo(headX, row.y);
+              context.lineTo(headX - arrowSize * Math.cos(Math.PI / 6), row.y - arrowSize * Math.sin(Math.PI / 6));
+              context.lineTo(headX - arrowSize * Math.cos(Math.PI / 6), row.y + arrowSize * Math.sin(Math.PI / 6));
+              context.closePath();
+              context.fill();
+              
+              context.fillStyle = 'white';
+              context.font = 'bold 11px Inter, system-ui, sans-serif';
+              context.fillText('ACK', (tailX + headX) / 2, row.y - 8);
+            }
+          }
+        });
+      } else {
+        // 其他步骤：正常绘制单个客户端和服务器
+        const clientX = width * 0.25;
+        const serverX = width * 0.75;
+        const centerY = height * 0.5;
+
+        context.strokeStyle = isDarkMode ? '#374151' : '#e5e7eb';
+        context.lineWidth = 3;
+        context.setLineDash([5, 5]);
+        context.beginPath();
+        context.moveTo(clientX + 60, centerY);
+        context.lineTo(serverX - 60, centerY);
+        context.stroke();
+        context.setLineDash([]);
+
+        const drawNode = (x: number, y: number, label: string, sublabel: string, isActive: boolean, status?: string, isClient?: boolean) => {
+          const pulse = Math.sin(timeRef.current * 3) * 4;
+          const color = isClient ? '#3b82f6' : '#8b5cf6';
+
+          if (isActive) {
+            const glowGradient = context.createRadialGradient(x, y, 40, x, y, 80 + pulse);
+            glowGradient.addColorStop(0, color + '40');
+            glowGradient.addColorStop(1, 'transparent');
+            context.fillStyle = glowGradient;
+            context.beginPath();
+            context.arc(x, y, 80 + pulse, 0, Math.PI * 2);
+            context.fill();
+          }
+
+          const nodeGradient = context.createLinearGradient(x - 50, y - 50, x + 50, y + 50);
+          nodeGradient.addColorStop(0, color);
+          nodeGradient.addColorStop(1, color + 'cc');
+          context.fillStyle = nodeGradient;
+          
+          if (isClient) {
+            context.beginPath();
+            context.roundRect(x - 50, y - 50, 100, 100, 12);
+            context.fill();
+            
+            context.fillStyle = 'white';
+            context.fillRect(x - 35, y - 30, 70, 45);
+            context.fillRect(x - 20, y + 15, 40, 8);
+            context.fillRect(x - 30, y + 23, 60, 6);
+          } else {
+            context.beginPath();
+            context.ellipse(x, y - 35, 50, 15, 0, 0, Math.PI * 2);
+            context.fill();
+            context.fillRect(x - 50, y - 35, 100, 70);
+            context.beginPath();
+            context.ellipse(x, y + 35, 50, 15, 0, 0, Math.PI * 2);
+            context.fill();
+            
+            context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            context.fillRect(x - 40, y - 20, 80, 4);
+            context.fillRect(x - 40, y - 10, 80, 4);
+            context.fillRect(x - 40, y, 80, 4);
+            context.fillRect(x - 40, y + 10, 80, 4);
+          }
+
+          context.fillStyle = 'white';
+          context.font = 'bold 16px Inter, system-ui, sans-serif';
+          context.textAlign = 'center';
+          context.fillText(label, x, y + 80);
+
+          context.fillStyle = secondaryText;
+          context.font = '12px Inter, system-ui, sans-serif';
+          context.fillText(sublabel, x, y + 100);
+
+          if (status) {
+            context.fillStyle = '#10b981';
+            context.font = 'bold 11px Inter, system-ui, sans-serif';
+            context.fillText(status, x, y + 120);
+          }
+        };
+
+        const isClientActive = currentStep >= 2 && currentStep <= 3;
+        const isServerActive = currentStep >= 2 && currentStep <= 3;
+        const clientStatus = steps[currentStep].clientStatus;
+        const serverStatus = steps[currentStep].serverStatus;
+        drawNode(clientX, centerY, '客户端', 'Client', isClientActive, clientStatus, true);
+        drawNode(serverX, centerY, '服务器', 'Server', isServerActive, serverStatus, false);
+
+        if (currentStep === 4) {
+          context.fillStyle = '#10b981';
+          context.font = 'bold 24px Inter, system-ui, sans-serif';
+          context.textAlign = 'center';
+          context.fillText('✓ 请求完成', width / 2, centerY - 80);
+        }
+
+        const now = Date.now();
+        setPackets((prevPackets) => {
+          let updated = false;
+          const newPackets = prevPackets.map((packet) => {
+            if (packet.completed) return packet;
+            if (now < packet.startTime) return packet;
+            if (!packet.active) { updated = true; return { ...packet, active: true }; }
+            if (packet.progress < 1) { updated = true; return { ...packet, progress: Math.min(1, packet.progress + 0.008) }; }
+            return { ...packet, completed: true };
+          });
+          return updated ? newPackets : prevPackets;
+        });
+
+        if (currentStep >= 2 && currentStep <= 3) {
+          const stepData = steps[currentStep];
+          if (stepData.packets.length > 0) {
+            const packetData = stepData.packets[0];
+            const fromX = packetData.from === 0 ? clientX : serverX;
+            const toX = packetData.from === 0 ? serverX : clientX;
+            const activePacket = packets.find((p) => p.type === packetData.type);
+            const progress = activePacket?.progress || 0;
+
+            if (progress > 0) {
+              const headX = fromX + (toX - fromX) * progress;
+              const tailProgress = Math.max(0, progress - 0.08);
+              const tailX = fromX + (toX - fromX) * tailProgress;
+              const colors = packetColors[packetData.type] || { start: '#64748b', end: '#475569' };
+
+              context.strokeStyle = colors.start;
+              context.lineWidth = 4;
+              context.lineCap = 'round';
+              context.beginPath();
+              context.moveTo(tailX, centerY);
+              context.lineTo(headX, centerY);
+              context.stroke();
+
+              const arrowSize = 12;
+              const direction = toX > fromX ? 1 : -1;
+              context.fillStyle = colors.start;
+              context.beginPath();
+              context.moveTo(headX, centerY);
+              context.lineTo(headX - arrowSize * direction * Math.cos(Math.PI / 6), centerY - arrowSize * Math.sin(Math.PI / 6));
+              context.lineTo(headX - arrowSize * direction * Math.cos(Math.PI / 6), centerY + arrowSize * Math.sin(Math.PI / 6));
+              context.closePath();
+              context.fill();
+            }
+          }
+        }
+
+        packets.forEach((packet) => {
+          if (!packet.active) return;
+          const fromX = packet.from === 0 ? clientX : serverX;
+          const toX = packet.from === 0 ? serverX : clientX;
+          const currentX = fromX + (toX - fromX) * packet.progress;
+          const colors = packetColors[packet.type] || { start: '#64748b', end: '#475569' };
+
+          context.save();
+          context.translate(currentX, centerY);
+          context.rotate(timeRef.current * 2);
+          const size = 28;
+          const glowGradient = context.createRadialGradient(0, 0, size * 0.5, 0, 0, size * 2);
+          glowGradient.addColorStop(0, colors.start + '60');
           glowGradient.addColorStop(1, 'transparent');
           context.fillStyle = glowGradient;
           context.beginPath();
-          context.arc(x, y, 80 + pulse, 0, Math.PI * 2);
+          context.arc(0, 0, size * 2, 0, Math.PI * 2);
           context.fill();
-        }
-
-        const nodeGradient = context.createLinearGradient(x - 50, y - 50, x + 50, y + 50);
-        nodeGradient.addColorStop(0, color);
-        nodeGradient.addColorStop(1, color + 'cc');
-        context.fillStyle = nodeGradient;
-        
-        if (isClient) {
+          const packetGradient = context.createRadialGradient(0, 0, 0, 0, 0, size);
+          packetGradient.addColorStop(0, colors.start);
+          packetGradient.addColorStop(1, colors.end);
+          context.fillStyle = packetGradient;
           context.beginPath();
-          context.roundRect(x - 50, y - 50, 100, 100, 12);
+          context.arc(0, 0, size, 0, Math.PI * 2);
           context.fill();
-          
+          context.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          context.lineWidth = 3;
+          context.stroke();
+          context.restore();
+
           context.fillStyle = 'white';
-          context.fillRect(x - 35, y - 30, 70, 45);
-          context.fillRect(x - 20, y + 15, 40, 8);
-          context.fillRect(x - 30, y + 23, 60, 6);
-        } else {
-          context.beginPath();
-          context.ellipse(x, y - 35, 50, 15, 0, 0, Math.PI * 2);
-          context.fill();
-          context.fillRect(x - 50, y - 35, 100, 70);
-          context.beginPath();
-          context.ellipse(x, y + 35, 50, 15, 0, 0, Math.PI * 2);
-          context.fill();
-          
-          context.fillStyle = 'rgba(255, 255, 255, 0.3)';
-          context.fillRect(x - 40, y - 20, 80, 4);
-          context.fillRect(x - 40, y - 10, 80, 4);
-          context.fillRect(x - 40, y, 80, 4);
-          context.fillRect(x - 40, y + 10, 80, 4);
-        }
-
-        context.fillStyle = 'white';
-        context.font = 'bold 16px Inter, system-ui, sans-serif';
-        context.textAlign = 'center';
-        context.fillText(label, x, y + 80);
-
-        context.fillStyle = secondaryText;
-        context.font = '12px Inter, system-ui, sans-serif';
-        context.fillText(sublabel, x, y + 100);
-
-        if (status) {
-          context.fillStyle = '#10b981';
-          context.font = 'bold 11px Inter, system-ui, sans-serif';
-          context.fillText(status, x, y + 120);
-        }
-      };
-
-      const isClientActive = currentStep >= 1 && currentStep <= 3;
-      const isServerActive = currentStep >= 1 && currentStep <= 3;
-      const clientStatus = steps[currentStep].clientStatus;
-      const serverStatus = steps[currentStep].serverStatus;
-      drawNode(clientX, centerY, '客户端', 'Client', isClientActive, clientStatus, true);
-      drawNode(serverX, centerY, '服务器', 'Server', isServerActive, serverStatus, false);
-
-      if (currentStep === 4) {
-        context.fillStyle = '#10b981';
-        context.font = 'bold 24px Inter, system-ui, sans-serif';
-        context.textAlign = 'center';
-        context.fillText('✓ 请求完成', width / 2, centerY - 80);
-      }
-
-      const now = Date.now();
-      setPackets((prevPackets) => {
-        let updated = false;
-        const newPackets = prevPackets.map((packet) => {
-          if (packet.completed) return packet;
-          if (now < packet.startTime) return packet;
-          if (!packet.active) { updated = true; return { ...packet, active: true }; }
-          if (packet.progress < 1) { updated = true; return { ...packet, progress: Math.min(1, packet.progress + 0.008) }; }
-          return { ...packet, completed: true };
+          context.font = 'bold 10px Inter, system-ui, sans-serif';
+          context.textAlign = 'center';
+          context.textBaseline = 'middle';
+          context.shadowColor = 'rgba(0, 0, 0, 0.7)';
+          context.shadowBlur = 4;
+          context.fillText(packet.type, currentX, centerY);
+          context.shadowBlur = 0;
         });
-        return updated ? newPackets : prevPackets;
-      });
-
-      if (currentStep >= 1 && currentStep <= 3) {
-        const stepData = steps[currentStep];
-        if (stepData.packets.length > 0) {
-          const packetData = stepData.packets[0];
-          const fromX = packetData.from === 0 ? clientX : serverX;
-          const toX = packetData.from === 0 ? serverX : clientX;
-          const activePacket = packets.find((p) => p.type === packetData.type);
-          const progress = activePacket?.progress || 0;
-
-          if (progress > 0) {
-            const headX = fromX + (toX - fromX) * progress;
-            const tailProgress = Math.max(0, progress - 0.08);
-            const tailX = fromX + (toX - fromX) * tailProgress;
-            const colors = packetColors[packetData.type] || { start: '#64748b', end: '#475569' };
-
-            context.strokeStyle = colors.start;
-            context.lineWidth = 4;
-            context.lineCap = 'round';
-            context.beginPath();
-            context.moveTo(tailX, centerY);
-            context.lineTo(headX, centerY);
-            context.stroke();
-
-            const arrowSize = 12;
-            const direction = toX > fromX ? 1 : -1;
-            context.fillStyle = colors.start;
-            context.beginPath();
-            context.moveTo(headX, centerY);
-            context.lineTo(headX - arrowSize * direction * Math.cos(Math.PI / 6), centerY - arrowSize * Math.sin(Math.PI / 6));
-            context.lineTo(headX - arrowSize * direction * Math.cos(Math.PI / 6), centerY + arrowSize * Math.sin(Math.PI / 6));
-            context.closePath();
-            context.fill();
-          }
-        }
       }
-
-      packets.forEach((packet) => {
-        if (!packet.active) return;
-        const fromX = packet.from === 0 ? clientX : serverX;
-        const toX = packet.from === 0 ? serverX : clientX;
-        const currentX = fromX + (toX - fromX) * packet.progress;
-        const colors = packetColors[packet.type] || { start: '#64748b', end: '#475569' };
-
-        context.save();
-        context.translate(currentX, centerY);
-        context.rotate(timeRef.current * 2);
-        const size = 28;
-        const glowGradient = context.createRadialGradient(0, 0, size * 0.5, 0, 0, size * 2);
-        glowGradient.addColorStop(0, colors.start + '60');
-        glowGradient.addColorStop(1, 'transparent');
-        context.fillStyle = glowGradient;
-        context.beginPath();
-        context.arc(0, 0, size * 2, 0, Math.PI * 2);
-        context.fill();
-        const packetGradient = context.createRadialGradient(0, 0, 0, 0, 0, size);
-        packetGradient.addColorStop(0, colors.start);
-        packetGradient.addColorStop(1, colors.end);
-        context.fillStyle = packetGradient;
-        context.beginPath();
-        context.arc(0, 0, size, 0, Math.PI * 2);
-        context.fill();
-        context.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        context.lineWidth = 3;
-        context.stroke();
-        context.restore();
-
-        context.fillStyle = 'white';
-        context.font = 'bold 10px Inter, system-ui, sans-serif';
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        context.shadowColor = 'rgba(0, 0, 0, 0.7)';
-        context.shadowBlur = 4;
-        context.fillText(packet.type, currentX, centerY);
-        context.shadowBlur = 0;
-      });
 
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -376,7 +516,9 @@ export default function HTTPPage() {
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
     };
   }, [currentStep, packets, isDarkMode]);
 
