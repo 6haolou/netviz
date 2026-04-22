@@ -174,21 +174,23 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center">
+            <div className="flex items-center">
+              {/* Logo 和平台名称 - 放在最左边，独立显示 */}
+              <Link href="/" className="flex items-center mr-12">
                 <h1 className="text-2xl font-bold" style={{ color: primaryBlue }}>NetViz</h1>
-                <span className="ml-2" style={{ color: secondaryTextColor }}>网络工程可视化</span>
+                <span className="ml-2 text-lg" style={{ color: secondaryTextColor }}>网络工程可视化</span>
               </Link>
 
-              <nav className="hidden md:flex items-center space-x-6">
+              {/* 导航栏 */}
+              <nav className="hidden md:flex items-center space-x-2">
                 <div className="relative">
                   <button
                     onClick={() => setIsOsiOpen(!isOsiOpen)}
-                    className="flex items-center space-x-1 transition-colors duration-300 hover:text-blue-500"
+                    className="px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-blue-500 hover:text-white"
                     style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
                   >
                     <span>OSI 七层模型</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
@@ -213,28 +215,28 @@ export default function Home() {
 
                 <Link
                   href="/category/routing"
-                  className="transition-colors duration-300 hover:text-blue-500"
+                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-blue-500 hover:text-white"
                   style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
                 >
                   路由协议
                 </Link>
                 <Link
                   href="/category/availability"
-                  className="transition-colors duration-300 hover:text-blue-500"
+                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-blue-500 hover:text-white"
                   style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
                 >
                   高可用性
                 </Link>
                 <Link
                   href="#"
-                  className="transition-colors duration-300 hover:text-blue-500"
+                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-blue-500 hover:text-white"
                   style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
                 >
                   网络安全
                 </Link>
                 <Link
                   href="#"
-                  className="transition-colors duration-300 hover:text-blue-500"
+                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-blue-500 hover:text-white"
                   style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
                 >
                   网络管理
