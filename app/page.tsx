@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
   const [isOsiOpen, setIsOsiOpen] = useState(false);
+  const [isOsiHover, setIsOsiHover] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -185,22 +186,35 @@ export default function Home() {
               <div className="relative">
                 <button
                   onClick={() => setIsOsiOpen(!isOsiOpen)}
-                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
+                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg whitespace-nowrap"
                   style={{ 
                     color: isDarkMode ? '#d1d5db' : '#374151',
                     backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
                   }}
                   onMouseEnter={(e) => {
+                    setIsOsiHover(true);
                     e.currentTarget.style.backgroundColor = primaryBlue;
                     e.currentTarget.style.color = '#ffffff';
                   }}
                   onMouseLeave={(e) => {
+                    setIsOsiHover(false);
                     e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
                     e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
                   }}
                 >
                   <span>OSI 七层模型</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="h-4 w-4 inline-block ml-1 transition-transform duration-300"
+                    style={{ 
+                      transform: isOsiOpen || isOsiHover ? 'rotate(180deg)' : 'rotate(0deg)',
+                      display: 'inline-flex',
+                      verticalAlign: 'middle'
+                    }} 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
