@@ -179,14 +179,283 @@ export default function HTTPPage() {
         }
       }
 
-      // TCP 三次握手步骤：绘制时序图样式
+      // TCP 三次握手步骤：绘制时序图样式 + 动画
       if (currentStep === 1) {
         const clientX = width * 0.25;
         const serverX = width * 0.75;
-        const topY = height * 0.12;
-        const bottomY = height * 0.92;
+        const topY = height * 0.1;
+        const bottomY = height * 0.95;
         
-        // 绘制垂直时间线（虚线）
+        // 绘制客户端图标（和其他页面一致）
+        const clientColor = '#3b82f6';
+        const pulse = Math.sin(timeRef.current * 3) * 4;
+        
+        // 光晕效果
+        const glowGradient = context.createRadialGradient(clientX, topY, 40, clientX, topY, 80 + pulse);
+        glowGradient.addColorStop(0, clientColor + '40');
+        glowGradient.addColorStop(1, 'transparent');
+        context.fillStyle = glowGradient;
+        context.beginPath();
+        context.arc(clientX, topY, 80 + pulse, 0, Math.PI * 2);
+        context.fill();
+        
+        // 节点渐变
+        const nodeGradient = context.createLinearGradient(clientX - 50, topY - 50, clientX + 50, topY + 50);
+        nodeGradient.addColorStop(0, clientColor);
+        nodeGradient.addColorStop(1, clientColor + 'cc');
+        context.fillStyle = nodeGradient;
+        
+        // 客户端：显示器图标
+        context.beginPath();
+        context.roundRect(clientX - 50, topY - 50, 100, 100, 12);
+        context.fill();
+        
+        // 显示器屏幕
+        context.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        context.fillRect(clientX - 35, topY - 30, 70, 45);
+        context.fillRect(clientX - 20, topY + 15, 40, 8);
+        context.fillRect(clientX - 30, topY + 23, 60, 6);
+        
+        // 标签 - 使用深色，确保在浅色背景下可见
+        context.fillStyle = isDarkMode ? '#ffffff' : '#1f2937';
+        context.font = 'bold 16px Inter, system-ui, sans-serif';
+        context.textAlign = 'center';
+        context.fillText('客户端', clientX, topY + 80);
+        
+        context.fillStyle = secondaryText;
+        context.font = '12px Inter, system-ui, sans-serif';
+        context.fillText('Client', clientX, topY + 100);
+
+        // 绘制服务器图标（和其他页面一致）
+        const serverColor = '#8b5cf6';
+        const serverGlowGradient = context.createRadialGradient(serverX, topY, 40, serverX, topY, 80 + pulse);
+        serverGlowGradient.addColorStop(0, serverColor + '40');
+        serverGlowGradient.addColorStop(1, 'transparent');
+        context.fillStyle = serverGlowGradient;
+        context.beginPath();
+        context.arc(serverX, topY, 80 + pulse, 0, Math.PI * 2);
+        context.fill();
+        
+        const serverNodeGradient = context.createLinearGradient(serverX - 50, topY - 50, serverX + 50, topY + 50);
+        serverNodeGradient.addColorStop(0, serverColor);
+        serverNodeGradient.addColorStop(1, serverColor + 'cc');
+        context.fillStyle = serverNodeGradient;
+        
+        // 服务器：圆柱体图标
+        context.beginPath();
+        context.ellipse(serverX, topY - 35, 50, 15, 0, 0, Math.PI * 2);
+        context.fill();
+        context.fillRect(serverX - 50, topY - 35, 100, 70);
+        context.beginPath();
+        context.ellipse(serverX, topY + 35, 50, 15, 0, 0, Math.PI * 2);
+        context.fill();
+        
+        // 服务器装饰线
+        context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        context.fillRect(serverX - 40, topY - 20, 80, 4);
+        context.fillRect(serverX - 40, topY - 10, 80, 4);
+        context.fillRect(serverX - 40, topY, 80, 4);
+        context.fillRect(serverX - 40, topY + 10, 80, 4);
+        
+        // 标签 - 使用深色，确保在浅色背景下可见
+        context.fillStyle = isDarkMode ? '#ffffff' : '#1f2937';
+        context.font = 'bold 16px Inter, system-ui, sans-serif';
+        context.fillText('服务器', serverX, topY + 80);
+        
+        context.fillStyle = secondaryText;
+        context.font = '12px Inter, system-ui, sans-serif';
+        context.fillText('Server', serverX, topY + 100);
+
+        // 绘制三个报文（带球球动画 + 文字）
+        const now = Date.now();
+        const clientISN = 1000;
+        const serverISN = 2000;
+        
+        // 第一次握手：SYN
+        const synPacket = packets.find(p => p.type === 'SYN');
+        const synProgress = synPacket && now >= synPacket.startTime ? Math.min(1, (now - synPacket.startTime) / 1500) : 0;
+        const synY1 = topY + 120;
+        const synY2 = topY + 240;
+        
+        if (synProgress > 0) {
+          const colors = packetColors['SYN'];
+          const currentProgress = Math.min(1, synProgress * 1.2);
+          const currentX = clientX + (serverX - clientX) * currentProgress;
+          const currentY = synY1 + (synY2 - synY1) * currentProgress;
+          
+          // 先绘制完整的灰色虚线路径（从起点到终点）
+          context.strokeStyle = isDarkMode ? 'rgba(107, 114, 128, 0.5)' : 'rgba(156, 163, 175, 0.5)';
+          context.lineWidth = 2;
+          context.setLineDash([5, 8]);
+          context.beginPath();
+          context.moveTo(clientX, synY1);
+          context.lineTo(serverX, synY2);
+          context.stroke();
+          context.setLineDash([]);
+          
+          // 绘制拖尾（虚线效果）
+          const tailProgress = Math.max(0, currentProgress - 0.15);
+          const tailX = clientX + (serverX - clientX) * tailProgress;
+          const tailY = synY1 + (synY2 - synY1) * tailProgress;
+          
+          // 绘制虚线路径
+          context.strokeStyle = colors.start;
+          context.lineWidth = 3;
+          context.lineCap = 'round';
+          context.setLineDash([8, 6]); // 虚线样式
+          context.beginPath();
+          context.moveTo(tailX, tailY);
+          context.lineTo(currentX, currentY);
+          context.stroke();
+          context.setLineDash([]); // 恢复实线
+          
+          // 绘制球球
+          context.save();
+          context.translate(currentX, currentY);
+          context.rotate(timeRef.current * 3);
+          
+          const size = 20;
+          const ballGlow = context.createRadialGradient(0, 0, size * 0.5, 0, 0, size * 2);
+          ballGlow.addColorStop(0, colors.start + '60');
+          ballGlow.addColorStop(1, 'transparent');
+          context.fillStyle = ballGlow;
+          context.beginPath();
+          context.arc(0, 0, size * 2, 0, Math.PI * 2);
+          context.fill();
+          
+          const ballGradient = context.createRadialGradient(0, 0, 0, 0, 0, size);
+          ballGradient.addColorStop(0, colors.start);
+          ballGradient.addColorStop(1, colors.end);
+          context.fillStyle = ballGradient;
+          context.beginPath();
+          context.arc(0, 0, size, 0, Math.PI * 2);
+          context.fill();
+          
+          context.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          context.lineWidth = 3;
+          context.stroke();
+          context.restore();
+          
+          // 在球球中间绘制文字（SYN）
+          context.save();
+          context.fillStyle = 'white';
+          context.font = 'bold 10px Inter, system-ui, sans-serif';
+          context.textAlign = 'center';
+          context.textBaseline = 'middle';
+          context.shadowColor = 'rgba(0, 0, 0, 0.7)';
+          context.shadowBlur = 4;
+          context.fillText('SYN', currentX, currentY);
+          context.restore();
+          
+          // 报文文字和序列号（在球球旁边带背景框）
+          if (currentProgress >= 0.3) {
+            context.save();
+            // 绘制文字背景
+            context.fillStyle = isDarkMode ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)';
+            context.fillRect(currentX + 20, currentY - 25, 70, 35);
+            
+            context.fillStyle = 'white';
+            context.font = 'bold 12px Inter, system-ui, sans-serif';
+            context.fillText('SYN', currentX + 55, currentY - 12);
+            context.font = '10px Inter, system-ui, sans-serif';
+            context.fillStyle = isDarkMode ? '#d1d5db' : '#6b7280';
+            context.fillText(`seq=${clientISN}`, currentX + 55, currentY + 5);
+            context.restore();
+          }
+        }
+        
+        // 第二次握手：SYN+ACK
+        const synAckPacket = packets.find(p => p.type === 'SYN+ACK');
+        const synAckProgress = synAckPacket && now >= synAckPacket.startTime ? Math.min(1, (now - synAckPacket.startTime) / 1500) : 0;
+        const synAckY1 = topY + 280;
+        const synAckY2 = topY + 400;
+        
+        if (synAckProgress > 0) {
+          const colors = packetColors['SYN+ACK'];
+          const currentProgress = Math.min(1, synAckProgress * 1.2);
+          const currentX = serverX + (clientX - serverX) * currentProgress;
+          const currentY = synAckY1 + (synAckY2 - synAckY1) * currentProgress;
+          
+          // 先绘制完整的灰色虚线路径（从起点到终点）
+          context.strokeStyle = isDarkMode ? 'rgba(107, 114, 128, 0.5)' : 'rgba(156, 163, 175, 0.5)';
+          context.lineWidth = 2;
+          context.setLineDash([5, 8]);
+          context.beginPath();
+          context.moveTo(serverX, synAckY1);
+          context.lineTo(clientX, synAckY2);
+          context.stroke();
+          context.setLineDash([]);
+          
+          const tailProgress = Math.max(0, currentProgress - 0.15);
+          const tailX = serverX + (clientX - serverX) * tailProgress;
+          const tailY = synAckY1 + (synAckY2 - synAckY1) * tailProgress;
+          
+          // 绘制虚线路径
+          context.strokeStyle = colors.start;
+          context.lineWidth = 3;
+          context.lineCap = 'round';
+          context.setLineDash([8, 6]); // 虚线样式
+          context.beginPath();
+          context.moveTo(tailX, tailY);
+          context.lineTo(currentX, currentY);
+          context.stroke();
+          context.setLineDash([]); // 恢复实线
+          
+          context.save();
+          context.translate(currentX, currentY);
+          context.rotate(timeRef.current * 3);
+          
+          const size = 20;
+          const ballGlow = context.createRadialGradient(0, 0, size * 0.5, 0, 0, size * 2);
+          ballGlow.addColorStop(0, colors.start + '60');
+          ballGlow.addColorStop(1, 'transparent');
+          context.fillStyle = ballGlow;
+          context.beginPath();
+          context.arc(0, 0, size * 2, 0, Math.PI * 2);
+          context.fill();
+          
+          const ballGradient = context.createRadialGradient(0, 0, 0, 0, 0, size);
+          ballGradient.addColorStop(0, colors.start);
+          ballGradient.addColorStop(1, colors.end);
+          context.fillStyle = ballGradient;
+          context.beginPath();
+          context.arc(0, 0, size, 0, Math.PI * 2);
+          context.fill();
+          
+          context.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          context.lineWidth = 3;
+          context.stroke();
+          context.restore();
+          
+          // 在球球中间绘制文字（SYN+ACK）
+          context.save();
+          context.fillStyle = 'white';
+          context.font = 'bold 9px Inter, system-ui, sans-serif';
+          context.textAlign = 'center';
+          context.textBaseline = 'middle';
+          context.shadowColor = 'rgba(0, 0, 0, 0.7)';
+          context.shadowBlur = 4;
+          context.fillText('SYN+ACK', currentX, currentY);
+          context.restore();
+          
+          if (currentProgress >= 0.3) {
+            context.save();
+            // 绘制文字背景 - 移到更左边，远离球球
+            context.fillStyle = isDarkMode ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)';
+            context.fillRect(currentX - 130, currentY - 25, 110, 40);
+            
+            context.fillStyle = 'white';
+            context.font = 'bold 11px Inter, system-ui, sans-serif';
+            context.fillText('SYN+ACK', currentX - 75, currentY - 8);
+            context.font = '9px Inter, system-ui, sans-serif';
+            context.fillStyle = isDarkMode ? '#d1d5db' : '#6b7280';
+            context.fillText(`seq=${serverISN}`, currentX - 75, currentY + 6);
+            context.fillText(`ack=${clientISN + 1}`, currentX - 75, currentY + 18);
+            context.restore();
+          }
+        }
+        
+        // 绘制垂直时间线（虚线）- 最后绘制，确保在所有元素之上
         context.strokeStyle = isDarkMode ? '#6b7280' : '#9ca3af';
         context.lineWidth = 2;
         context.setLineDash([5, 10]);
@@ -200,159 +469,94 @@ export default function HTTPPage() {
         context.stroke();
         context.setLineDash([]);
 
-        // 绘制客户端图标（顶部）
-        const clientColor = '#3b82f6';
-        context.fillStyle = clientColor;
-        // 显示器屏幕
-        context.fillRect(clientX - 40, topY - 50, 80, 50);
-        // 显示器支架
-        context.fillRect(clientX - 10, topY, 20, 15);
-        // 显示器底座
-        context.fillRect(clientX - 30, topY + 15, 60, 8);
-        // 屏幕边框
-        context.strokeStyle = '#1e40af';
-        context.lineWidth = 3;
-        context.strokeRect(clientX - 40, topY - 50, 80, 50);
-        // 标签
-        context.fillStyle = isDarkMode ? '#ffffff' : '#1f2937';
-        context.font = 'bold 14px Inter, system-ui, sans-serif';
-        context.textAlign = 'center';
-        context.fillText('客户端', clientX, topY - 70);
-
-        // 绘制服务器图标（顶部）
-        const serverColor = '#8b5cf6';
-        context.fillStyle = serverColor;
-        // 服务器机箱（圆柱体简化版）
-        context.beginPath();
-        context.roundRect(serverX - 40, topY - 50, 80, 60, 8);
-        context.fill();
-        // 服务器装饰线
-        context.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        context.fillRect(serverX - 30, topY - 35, 60, 4);
-        context.fillRect(serverX - 30, topY - 25, 60, 4);
-        context.fillRect(serverX - 30, topY - 15, 60, 4);
-        // 标签
-        context.fillStyle = isDarkMode ? '#ffffff' : '#1f2937';
-        context.fillText('服务器', serverX, topY - 70);
-
-        // 绘制三个报文箭头
-        const now = Date.now();
-        const clientISN = 1000; // 客户端初始序列号
-        const serverISN = 2000; // 服务器初始序列号
-        
-        // 第一次握手：SYN（从上到下）
-        const synPacket = packets.find(p => p.type === 'SYN');
-        const synProgress = synPacket && now >= synPacket.startTime ? Math.min(1, (now - synPacket.startTime) / 1000) : 0;
-        const synY1 = topY + 80;
-        const synY2 = topY + 180;
-        const synCurrentY = synY1 + (synY2 - synY1) * synProgress;
-        
-        if (synProgress > 0) {
-          // 绘制箭头线
-          const colors = packetColors['SYN'];
-          context.strokeStyle = colors.start;
-          context.lineWidth = 3;
-          context.lineCap = 'round';
-          context.beginPath();
-          context.moveTo(clientX, synY1);
-          context.lineTo(serverX, synCurrentY);
-          context.stroke();
-          
-          // 箭头头部
-          if (synProgress >= 1) {
-            const arrowSize = 12;
-            const angle = Math.atan2(synY2 - synY1, serverX - clientX);
-            context.fillStyle = colors.start;
-            context.beginPath();
-            context.moveTo(serverX, synY2);
-            context.lineTo(serverX - arrowSize * Math.cos(angle - Math.PI / 6), synY2 - arrowSize * Math.sin(angle - Math.PI / 6));
-            context.lineTo(serverX - arrowSize * Math.cos(angle + Math.PI / 6), synY2 - arrowSize * Math.sin(angle + Math.PI / 6));
-            context.closePath();
-            context.fill();
-            
-            // 报文标签和序列号
-            context.fillStyle = 'white';
-            context.font = 'bold 12px Inter, system-ui, sans-serif';
-            context.fillText('SYN', (clientX + serverX) / 2, synY1 - 15);
-            context.font = '10px Inter, system-ui, sans-serif';
-            context.fillStyle = isDarkMode ? '#d1d5db' : '#6b7280';
-            context.fillText(`SYN=1, seq=${clientISN}`, (clientX + serverX) / 2, synY1);
-          }
-        }
-        
-        // 第二次握手：SYN+ACK（从下到上）
-        const synAckPacket = packets.find(p => p.type === 'SYN+ACK');
-        const synAckProgress = synAckPacket && now >= synAckPacket.startTime ? Math.min(1, (now - synAckPacket.startTime) / 1000) : 0;
-        const synAckY1 = topY + 220;
-        const synAckY2 = topY + 320;
-        const synAckCurrentY = synAckY1 + (synAckY2 - synAckY1) * synAckProgress;
-        
-        if (synAckProgress > 0) {
-          const colors = packetColors['SYN+ACK'];
-          context.strokeStyle = colors.start;
-          context.lineWidth = 3;
-          context.lineCap = 'round';
-          context.beginPath();
-          context.moveTo(serverX, synAckY1);
-          context.lineTo(clientX, synAckCurrentY);
-          context.stroke();
-          
-          if (synAckProgress >= 1) {
-            const arrowSize = 12;
-            const angle = Math.atan2(synAckY2 - synAckY1, clientX - serverX);
-            context.fillStyle = colors.start;
-            context.beginPath();
-            context.moveTo(clientX, synAckY2);
-            context.lineTo(clientX - arrowSize * Math.cos(angle - Math.PI / 6), synAckY2 - arrowSize * Math.sin(angle - Math.PI / 6));
-            context.lineTo(clientX - arrowSize * Math.cos(angle + Math.PI / 6), synAckY2 - arrowSize * Math.sin(angle + Math.PI / 6));
-            context.closePath();
-            context.fill();
-            
-            context.fillStyle = 'white';
-            context.font = 'bold 12px Inter, system-ui, sans-serif';
-            context.fillText('SYN+ACK', (clientX + serverX) / 2 + 50, synAckY1 - 15);
-            context.font = '10px Inter, system-ui, sans-serif';
-            context.fillStyle = isDarkMode ? '#d1d5db' : '#6b7280';
-            context.fillText(`SYN=1, seq=${serverISN}`, (clientX + serverX) / 2 + 50, synAckY1);
-            context.fillText(`ACK=1, ack=${clientISN + 1}`, (clientX + serverX) / 2 + 50, synAckY1 + 12);
-          }
-        }
-        
-        // 第三次握手：ACK（从上到下）
+        // 第三次握手：ACK
         const ackPacket = packets.find(p => p.type === 'ACK');
-        const ackProgress = ackPacket && now >= ackPacket.startTime ? Math.min(1, (now - ackPacket.startTime) / 1000) : 0;
-        const ackY1 = topY + 360;
-        const ackY2 = topY + 460;
-        const ackCurrentY = ackY1 + (ackY2 - ackY1) * ackProgress;
+        const ackProgress = ackPacket && now >= ackPacket.startTime ? Math.min(1, (now - ackPacket.startTime) / 1500) : 0;
+        const ackY1 = topY + 440;
+        const ackY2 = topY + 560;
         
         if (ackProgress > 0) {
           const colors = packetColors['ACK'];
+          const currentProgress = Math.min(1, ackProgress * 1.2);
+          const currentX = clientX + (serverX - clientX) * currentProgress;
+          const currentY = ackY1 + (ackY2 - ackY1) * currentProgress;
+          
+          // 先绘制完整的灰色虚线路径（从起点到终点）
+          context.strokeStyle = isDarkMode ? 'rgba(107, 114, 128, 0.5)' : 'rgba(156, 163, 175, 0.5)';
+          context.lineWidth = 2;
+          context.setLineDash([5, 8]);
+          context.beginPath();
+          context.moveTo(clientX, ackY1);
+          context.lineTo(serverX, ackY2);
+          context.stroke();
+          context.setLineDash([]);
+          
+          const tailProgress = Math.max(0, currentProgress - 0.15);
+          const tailX = clientX + (serverX - clientX) * tailProgress;
+          const tailY = ackY1 + (ackY2 - ackY1) * tailProgress;
+          
+          // 绘制虚线路径
           context.strokeStyle = colors.start;
           context.lineWidth = 3;
           context.lineCap = 'round';
+          context.setLineDash([8, 6]); // 虚线样式
           context.beginPath();
-          context.moveTo(clientX, ackY1);
-          context.lineTo(serverX, ackCurrentY);
+          context.moveTo(tailX, tailY);
+          context.lineTo(currentX, currentY);
           context.stroke();
+          context.setLineDash([]); // 恢复实线
           
-          if (ackProgress >= 1) {
-            const arrowSize = 12;
-            const angle = Math.atan2(ackY2 - ackY1, serverX - clientX);
-            context.fillStyle = colors.start;
-            context.beginPath();
-            context.moveTo(serverX, ackY2);
-            context.lineTo(serverX - arrowSize * Math.cos(angle - Math.PI / 6), ackY2 - arrowSize * Math.sin(angle - Math.PI / 6));
-            context.lineTo(serverX - arrowSize * Math.cos(angle + Math.PI / 6), ackY2 - arrowSize * Math.sin(angle + Math.PI / 6));
-            context.closePath();
-            context.fill();
+          context.save();
+          context.translate(currentX, currentY);
+          context.rotate(timeRef.current * 3);
+          
+          const size = 20;
+          const ballGlow = context.createRadialGradient(0, 0, size * 0.5, 0, 0, size * 2);
+          ballGlow.addColorStop(0, colors.start + '60');
+          ballGlow.addColorStop(1, 'transparent');
+          context.fillStyle = ballGlow;
+          context.beginPath();
+          context.arc(0, 0, size * 2, 0, Math.PI * 2);
+          context.fill();
+          
+          const ballGradient = context.createRadialGradient(0, 0, 0, 0, 0, size);
+          ballGradient.addColorStop(0, colors.start);
+          ballGradient.addColorStop(1, colors.end);
+          context.fillStyle = ballGradient;
+          context.beginPath();
+          context.arc(0, 0, size, 0, Math.PI * 2);
+          context.fill();
+          
+          context.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          context.lineWidth = 3;
+          context.stroke();
+          context.restore();
+          
+          // 在球球中间绘制文字（ACK）
+          context.save();
+          context.fillStyle = 'white';
+          context.font = 'bold 10px Inter, system-ui, sans-serif';
+          context.textAlign = 'center';
+          context.textBaseline = 'middle';
+          context.shadowColor = 'rgba(0, 0, 0, 0.7)';
+          context.shadowBlur = 4;
+          context.fillText('ACK', currentX, currentY);
+          context.restore();
+          
+          if (currentProgress >= 0.3) {
+            context.save();
+            // 绘制文字背景
+            context.fillStyle = isDarkMode ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)';
+            context.fillRect(currentX + 20, currentY - 30, 85, 45);
             
             context.fillStyle = 'white';
             context.font = 'bold 12px Inter, system-ui, sans-serif';
-            context.fillText('ACK', (clientX + serverX) / 2, ackY1 - 15);
+            context.fillText('ACK', currentX + 62, currentY - 12);
             context.font = '10px Inter, system-ui, sans-serif';
             context.fillStyle = isDarkMode ? '#d1d5db' : '#6b7280';
-            context.fillText(`SYN=0, seq=${clientISN + 1}`, (clientX + serverX) / 2, ackY1);
-            context.fillText(`ACK=1, ack=${serverISN + 1}`, (clientX + serverX) / 2, ackY1 + 12);
+            context.fillText(`seq=${clientISN + 1}`, currentX + 62, currentY + 5);
+            context.fillText(`ack=${serverISN + 1}`, currentX + 62, currentY + 18);
+            context.restore();
           }
         }
       } else {
@@ -414,7 +618,8 @@ export default function HTTPPage() {
             context.fillRect(x - 40, y + 10, 80, 4);
           }
 
-          context.fillStyle = 'white';
+          // 标签颜色 - 根据模式调整，确保可见
+          context.fillStyle = isDarkMode ? '#ffffff' : '#1f2937';
           context.font = 'bold 16px Inter, system-ui, sans-serif';
           context.textAlign = 'center';
           context.fillText(label, x, y + 80);
@@ -610,8 +815,8 @@ export default function HTTPPage() {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div className="lg:col-span-3 flex flex-col gap-4">
-              <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: cardBg, borderColor: borderColor, minHeight: currentStep === 1 ? '600px' : '400px' }}>
-                <canvas ref={canvasRef} className="w-full h-full" />
+              <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: cardBg, borderColor: borderColor, minHeight: currentStep === 1 ? '700px' : '450px' }}>
+                <canvas ref={canvasRef} className="w-full h-full" style={{ display: 'block' }} />
               </div>
               <div className="rounded-xl border p-4" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
                 <div className="flex items-center gap-2 mb-3">
