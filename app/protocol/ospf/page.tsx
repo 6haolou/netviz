@@ -985,13 +985,13 @@ export default function OSPFPage() {
                     </div>
                   ))}
                 </div>
-              </div>
             </div>
+          </div>
 
-            {/* 底部区域：报文日志 + 状态机说明 - 分成两个独立容器 */}
-            <div className="w-full grid grid-cols-2 gap-4 mb-6">
-              {/* 报文交互日志 */}
-              <div className="rounded-xl border p-4 w-full" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
+          {/* 底部区域：报文日志 + 状态机说明 - 分成两个独立容器 */}
+          <div className="w-full grid grid-cols-2 gap-4 mb-6">
+            {/* 报文交互日志 */}
+            <div className="rounded-xl border p-4 w-full" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
                 <div className="flex items-center gap-2 mb-3 pb-3 border-b" style={{ borderColor: borderColor }}>
                   <span className="text-lg">📦</span>
                   <div>
