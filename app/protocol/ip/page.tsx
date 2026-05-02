@@ -853,6 +853,115 @@ export default function IPPage() {
               </div>
             </div>
           </div>
+
+          <div className="rounded-xl border p-6 mb-6" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
+            <h2 className="text-xl font-bold mb-4" style={{ color: primaryBlue }}>五、IPv6 协议详解</h2>
+            
+            <div className="mb-6">
+              <p className="text-sm leading-relaxed mb-3" style={{ color: textColor }}>
+                <span style={{ color: primaryBlue, fontWeight: 600 }}>IPv6（Internet Protocol version 6）</span>是下一代网际协议，旨在解决 IPv4 地址耗尽问题。IPv6 使用 128 位地址，提供约 3.4×10³⁸ 个地址。IPv6 首部固定为 40 字节，结构更简洁高效。
+              </p>
+
+              <div className="overflow-x-auto mb-6">
+                <div className="min-w-[800px]">
+                  <div className="grid grid-cols-32 gap-0.5 text-center text-xs font-mono mb-4">
+                    <div className="col-span-4 p-2 rounded-tl-lg" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6' }}>
+                      <div className="font-bold" style={{ color: primaryBlue }}>版本</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>4位</div>
+                      <div className="text-xs" style={{ color: textColor }}>IPv6=6</div>
+                    </div>
+                    <div className="col-span-8 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981' }}>
+                      <div className="font-bold" style={{ color: '#10b981' }}>流量类型</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>8位</div>
+                      <div className="text-xs" style={{ color: textColor }}>类似 IPv4 服务类型</div>
+                    </div>
+                    <div className="col-span-20 p-2 rounded-tr-lg" style={{ backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.2)', border: '1px solid #8b5cf6' }}>
+                      <div className="font-bold" style={{ color: '#8b5cf6' }}>流标签（Flow Label）</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>20位</div>
+                      <div className="text-xs" style={{ color: textColor }}>标识特定流，用于 QoS</div>
+                    </div>
+
+                    <div className="col-span-10 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.2)', border: '1px solid #f59e0b' }}>
+                      <div className="font-bold" style={{ color: '#f59e0b' }}>有效载荷长度</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>16位</div>
+                    </div>
+                    <div className="col-span-8 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(236, 72, 153, 0.3)' : 'rgba(236, 72, 153, 0.2)', border: '1px solid #ec4899' }}>
+                      <div className="font-bold" style={{ color: '#ec4899' }}>下一个首部</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>8位</div>
+                    </div>
+                    <div className="col-span-14 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444' }}>
+                      <div className="font-bold" style={{ color: '#ef4444' }}>跳数限制</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>8位</div>
+                    </div>
+
+                    <div className="col-span-32 p-3" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6' }}>
+                      <div className="font-bold" style={{ color: primaryBlue }}>源 IPv6 地址（Source Address）- 128 位</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>例如：2001:0db8:85a3:0000:0000:8a2e:0370:7334</div>
+                    </div>
+
+                    <div className="col-span-32 p-3 rounded-b-lg" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981' }}>
+                      <div className="font-bold" style={{ color: '#10b981' }}>目的 IPv6 地址（Destination Address）- 128 位</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>例如：fe80::1（链路本地地址）</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                <div className="p-4 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.04)', borderColor: '#3b82f6' }}>
+                  <div className="font-bold text-sm mb-2" style={{ color: '#3b82f6' }}>📐 IPv6 地址格式</div>
+                  <ul className="text-xs space-y-1" style={{ color: secondaryText }}>
+                    <li>• 128 位，8 组 16 位十六进制数</li>
+                    <li>• 每组前导零可省略，连续零可用 :: 替代</li>
+                    <li>• 示例：2001:db8::1</li>
+                  </ul>
+                </div>
+                <div className="p-4 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.08)' : 'rgba(16, 185, 129, 0.04)', borderColor: '#10b981' }}>
+                  <div className="font-bold text-sm mb-2" style={{ color: '#10b981' }}>🔗 IPv6 地址分类</div>
+                  <ul className="text-xs space-y-1" style={{ color: secondaryText }}>
+                    <li>• 单播（Unicast）：一对一的通信</li>
+                    <li>• 多播（Multicast）：一对多的通信</li>
+                    <li>• 任播（Anycast）：一组中最近的</li>
+                    <li>• 无广播地址，NDP 替代 ARP</li>
+                  </ul>
+                </div>
+                <div className="p-4 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.08)' : 'rgba(245, 158, 11, 0.04)', borderColor: '#f59e0b' }}>
+                  <div className="font-bold text-sm mb-2" style={{ color: '#f59e0b' }}>⚡ IPv6 新特性</div>
+                  <ul className="text-xs space-y-1" style={{ color: secondaryText }}>
+                    <li>• SLAAC 无状态地址自动配置</li>
+                    <li>• NDP 邻居发现协议</li>
+                    <li>• 内置 IPsec 安全支持</li>
+                    <li>• 不再需要 NAT</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <div className="min-w-[600px]">
+                  <div className="font-bold text-sm mb-3" style={{ color: primaryBlue, borderLeft: '3px solid #8b5cf6', paddingLeft: '10px' }}>IPv4 vs IPv6 对比</div>
+                  <table className="w-full text-xs" style={{ color: textColor }}>
+                    <thead>
+                      <tr>
+                        <th className="p-3 text-left font-bold" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)', borderBottom: '2px solid #3b82f6' }}>对比项</th>
+                        <th className="p-3 text-center font-bold" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)', borderBottom: '2px solid #3b82f6' }}>IPv4</th>
+                        <th className="p-3 text-center font-bold" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)', borderBottom: '2px solid #10b981' }}>IPv6</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td className="p-3 border-b" style={{ borderColor: borderColor, fontWeight: 600 }}>地址长度</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#3b82f6' }}>32 位</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#10b981' }}>128 位</td></tr>
+                      <tr><td className="p-3 border-b" style={{ borderColor: borderColor, fontWeight: 600 }}>首部长度</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#3b82f6' }}>20-60 字节</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#10b981' }}>40 字节（固定）</td></tr>
+                      <tr><td className="p-3 border-b" style={{ borderColor: borderColor, fontWeight: 600 }}>校验和</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#3b82f6' }}>有（每跳重新计算）</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#10b981' }}>无（依赖链路层）</td></tr>
+                      <tr><td className="p-3 border-b" style={{ borderColor: borderColor, fontWeight: 600 }}>分片</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#3b82f6' }}>路由器分片</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#10b981' }}>仅发送端分片</td></tr>
+                      <tr><td className="p-3 border-b" style={{ borderColor: borderColor, fontWeight: 600 }}>地址配置</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#3b82f6' }}>DHCP</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#10b981' }}>SLAAC + DHCPv6</td></tr>
+                      <tr><td className="p-3 border-b" style={{ borderColor: borderColor, fontWeight: 600 }}>ARP</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#3b82f6' }}>ARP 广播查询</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#10b981' }}>NDP 邻居发现</td></tr>
+                      <tr><td className="p-3 border-b" style={{ borderColor: borderColor, fontWeight: 600 }}>广播</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#3b82f6' }}>有广播地址</td><td className="p-3 text-center border-b" style={{ borderColor: borderColor, color: '#10b981' }}>无广播，使用多播</td></tr>
+                      <tr><td className="p-3" style={{ fontWeight: 600 }}>NAT</td><td className="p-3 text-center" style={{ color: '#3b82f6' }}>普适（地址不足）</td><td className="p-3 text-center" style={{ color: '#10b981' }}>无需 NAT（地址充足）</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 
