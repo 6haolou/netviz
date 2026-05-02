@@ -733,11 +733,96 @@ export default function IPPage() {
           </div>
 
           <div className="rounded-xl border p-6 mb-6" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
-            <h2 className="text-xl font-bold mb-4" style={{ color: primaryBlue }}>四、IP 核心机制详解</h2>
+            <h2 className="text-xl font-bold mb-4" style={{ color: primaryBlue }}>四、IPv4 报文首部详解</h2>
+            
             <div className="mb-6">
               <p className="text-sm leading-relaxed mb-4" style={{ color: textColor }}>
-                IP 协议除了基本的路由转发外，还涉及子网划分、NAT、分片与重组等核心机制。
+                IPv4 首部是 IP 协议的核心组成部分，包含版本、首部长度、服务类型、总长度、标识、标志、片偏移、TTL、协议、首部校验和、源/目的 IP 地址等关键字段。标准 IPv4 首部为 20 字节，可选字段可扩展到 60 字节。
               </p>
+              
+              {/* 首部结构可视化 */}
+              <div className="overflow-x-auto mb-6">
+                <div className="min-w-[800px]">
+                  <div className="grid grid-cols-32 gap-0.5 text-center text-xs font-mono mb-4">
+                    {/* 第1行：版本 + 首部长度 + 服务类型 + 总长度 */}
+                    <div className="col-span-4 p-2 rounded-tl-lg" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6' }}>
+                      <div className="font-bold" style={{ color: primaryBlue }}>版本</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>4位</div>
+                      <div className="text-xs" style={{ color: textColor }}>IPv4=4</div>
+                    </div>
+                    <div className="col-span-4 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.2)', border: '1px solid #8b5cf6' }}>
+                      <div className="font-bold" style={{ color: '#8b5cf6' }}>首部长度</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>4位</div>
+                      <div className="text-xs" style={{ color: textColor }}>20-60B</div>
+                    </div>
+                    <div className="col-span-8 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981' }}>
+                      <div className="font-bold" style={{ color: '#10b981' }}>服务类型（DSCP+ECN）</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>8位</div>
+                      <div className="text-xs" style={{ color: textColor }}>区分服务 + 拥塞通知</div>
+                    </div>
+                    <div className="col-span-16 p-2 rounded-tr-lg" style={{ backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.2)', border: '1px solid #f59e0b' }}>
+                      <div className="font-bold" style={{ color: '#f59e0b' }}>总长度（Total Length）</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>16位</div>
+                      <div className="text-xs" style={{ color: textColor }}>首部+数据，最大65535字节</div>
+                    </div>
+
+                    {/* 第2行：标识 + 标志 + 片偏移 */}
+                    <div className="col-span-16 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(236, 72, 153, 0.3)' : 'rgba(236, 72, 153, 0.2)', border: '1px solid #ec4899' }}>
+                      <div className="font-bold" style={{ color: '#ec4899' }}>标识（Identification）</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>16位</div>
+                      <div className="text-xs" style={{ color: textColor }}>标识数据包，用于分片重组</div>
+                    </div>
+                    <div className="col-span-3 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444' }}>
+                      <div className="font-bold text-xs" style={{ color: '#ef4444' }}>标志</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>3位</div>
+                      <div className="text-xs" style={{ color: textColor }}>DF/MF</div>
+                    </div>
+                    <div className="col-span-13 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.2)', border: '1px solid #f59e0b' }}>
+                      <div className="font-bold" style={{ color: '#f59e0b' }}>片偏移（Fragment Offset）</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>13位</div>
+                      <div className="text-xs" style={{ color: textColor }}>分片在原包中的位置</div>
+                    </div>
+
+                    {/* 第3行：TTL + 协议 + 首部校验和 */}
+                    <div className="col-span-8 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6' }}>
+                      <div className="font-bold" style={{ color: primaryBlue }}>TTL</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>8位</div>
+                      <div className="text-xs" style={{ color: textColor }}>生存时间，每跳减1</div>
+                    </div>
+                    <div className="col-span-8 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.2)', border: '1px solid #8b5cf6' }}>
+                      <div className="font-bold" style={{ color: '#8b5cf6' }}>协议（Protocol）</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>8位</div>
+                      <div className="text-xs" style={{ color: textColor }}>TCP=6, UDP=17, ICMP=1</div>
+                    </div>
+                    <div className="col-span-16 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981' }}>
+                      <div className="font-bold" style={{ color: '#10b981' }}>首部校验和（Header Checksum）</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>16位</div>
+                      <div className="text-xs" style={{ color: textColor }}>仅校验 IP 首部，每跳重新计算</div>
+                    </div>
+
+                    {/* 第4行：源 IP 地址 */}
+                    <div className="col-span-32 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.2)', border: '1px solid #f59e0b' }}>
+                      <div className="font-bold" style={{ color: '#f59e0b' }}>源 IP 地址（Source IP Address）</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>32位</div>
+                      <div className="text-xs" style={{ color: textColor }}>发送方的 IP 地址，如 192.168.1.10</div>
+                    </div>
+
+                    {/* 第5行：目的 IP 地址 */}
+                    <div className="col-span-32 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(236, 72, 153, 0.3)' : 'rgba(236, 72, 153, 0.2)', border: '1px solid #ec4899' }}>
+                      <div className="font-bold" style={{ color: '#ec4899' }}>目的 IP 地址（Destination IP Address）</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>32位</div>
+                      <div className="text-xs" style={{ color: textColor }}>最终接收方的 IP 地址，如 192.168.2.20</div>
+                    </div>
+
+                    {/* 第6行：选项（可选） */}
+                    <div className="col-span-32 p-2 rounded-b-lg" style={{ backgroundColor: isDarkMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.5)', border: '2px dashed #64748b' }}>
+                      <div className="font-bold" style={{ color: '#64748b' }}>选项（Options）</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>0-320位（0-40字节），可选，如安全、时间戳、路由记录等</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="p-4 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.04)', borderColor: '#3b82f6' }}>
                   <div className="font-bold text-sm mb-2" style={{ color: '#3b82f6' }}>🔧 子网掩码</div>
