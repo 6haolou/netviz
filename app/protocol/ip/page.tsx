@@ -362,7 +362,7 @@ export default function IPPage() {
                 </div>
                 <div className="p-3 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)' }}>
                   <div className="text-xs font-semibold mb-1" style={{ color: '#10b981' }}>首部长度</div>
-                  <div className="text-lg font-bold" style={{ color: textColor }}>20 - 60 字节</div>
+                  <div className="text-lg font-bold" style={{ color: textColor }}>IPv4: 20-60B / IPv6: 40B</div>
                 </div>
                 <div className="p-4 rounded-xl cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]" style={{ backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.15)', border: '2px solid #f59e0b' }} onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}>
                   <div className="flex items-center justify-between mb-2">
