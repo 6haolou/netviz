@@ -645,7 +645,7 @@ export default function TCPPage() {
 
               {/* 6 种标志位 */}
               <div className="mb-4">
-                <div className="text-sm font-bold mb-3 pl-2" style={{ color: primaryBlue, borderLeft: '3px solid '#8b5cf6', paddingLeft: '10px' }}>六种标志位</div>
+                <div className="text-sm font-bold mb-3 pl-2" style={{ color: primaryBlue, borderLeft: '3px solid #8b5cf6', paddingLeft: '10px' }}>六种标志位</div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
                   <div className="p-4 rounded-lg border-2" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)', borderColor: '#3b82f6' }}>
                     <div className="flex items-center gap-2 mb-2">
