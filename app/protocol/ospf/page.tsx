@@ -989,7 +989,7 @@ export default function OSPFPage() {
           </div>
 
           {/* 底部区域：报文日志 + 状态机说明 - 分成两个独立容器 */}
-          <div className="w-full grid grid-cols-2 gap-4 mb-6">
+          <div className="w-full grid grid-cols-2 gap-4 mb-6 lg:col-span-full">
             {/* 报文交互日志 */}
             <div className="rounded-xl border p-4 w-full" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
                 <div className="flex items-center gap-2 mb-3 pb-3 border-b" style={{ borderColor: borderColor }}>
