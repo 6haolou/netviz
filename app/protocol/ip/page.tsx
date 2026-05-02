@@ -372,7 +372,7 @@ export default function IPPage() {
                       </div>
                       <div>
                         <div className="text-xs font-semibold" style={{ color: '#f59e0b' }}>首部结构</div>
-                        <div className="text-lg font-bold" style={{ color: textColor }}>IPv4 首部字段详解</div>
+                        <div className="text-lg font-bold" style={{ color: textColor }}>IPv4 / IPv6 首部字段详解</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -383,7 +383,7 @@ export default function IPPage() {
                   </div>
                   {isHeaderExpanded && (
                     <div className="mt-4 pt-4 border-t" style={{ borderColor: isDarkMode ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.2)' }}>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div className="space-y-3">
                           <div className="p-3 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)' }}>
                             <div className="flex items-center gap-2 mb-2">
@@ -396,6 +396,21 @@ export default function IPPage() {
                               <div>• TTL（8位）+ 协议（8位）+ 首部校验和（16位）</div>
                               <div>• 源 IP 地址（32位）+ 目的 IP 地址（32位）</div>
                               <div>• 选项（0-40字节，可变）</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="p-3 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)' }}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-lg">📐</span>
+                              <div className="font-bold text-sm" style={{ color: primaryBlue }}>IPv6 首部结构</div>
+                            </div>
+                            <div className="text-xs leading-relaxed space-y-1" style={{ color: secondaryText }}>
+                              <div>• 版本（4位）+ 流量类型（8位）+ 流标签（20位）</div>
+                              <div>• 有效载荷长度（16位）+ 下一个首部（8位）+ 跳数限制（8位）</div>
+                              <div>• 源 IPv6 地址（128位）+ 目的 IPv6 地址（128位）</div>
+                              <div>• 首部固定为 40 字节，无校验和</div>
+                              <div>• 无分片字段（Path MTU Discovery）</div>
                             </div>
                           </div>
                         </div>
@@ -917,12 +932,18 @@ export default function IPPage() {
                   </ul>
                 </div>
                 <div className="p-4 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.08)' : 'rgba(16, 185, 129, 0.04)', borderColor: '#10b981' }}>
-                  <div className="font-bold text-sm mb-2" style={{ color: '#10b981' }}>🔗 IPv6 地址分类</div>
+                  <div className="font-bold text-sm mb-2" style={{ color: '#10b981' }}>🔗 IPv6 单播地址类型</div>
                   <ul className="text-xs space-y-1" style={{ color: secondaryText }}>
-                    <li>• 单播（Unicast）：一对一的通信</li>
-                    <li>• 多播（Multicast）：一对多的通信</li>
-                    <li>• 任播（Anycast）：一组中最近的</li>
-                    <li>• 无广播地址，NDP 替代 ARP</li>
+                    <li>• <span className="font-bold" style={{ color: '#10b981' }}>全球单播地址（Global Unicast）</span></li>
+                    <li className="pl-4">2000::/3，公网可路由</li>
+                    <li>• <span className="font-bold" style={{ color: '#3b82f6' }}>唯一本地地址（Unique Local）</span></li>
+                    <li className="pl-4">FC00::/7，类似 IPv4 私有地址</li>
+                    <li>• <span className="font-bold" style={{ color: '#f59e0b' }}>链路本地地址（Link-Local）</span></li>
+                    <li className="pl-4">FE80::/10，同一链路通信</li>
+                    <li>• <span className="font-bold" style={{ color: '#8b5cf6' }}>回环地址（Loopback）</span></li>
+                    <li className="pl-4">::1/128，类似 127.0.0.1</li>
+                    <li>• <span className="font-bold" style={{ color: '#ec4899' }}>未指定地址（Unspecified）</span></li>
+                    <li className="pl-4">::/128，类似 0.0.0.0</li>
                   </ul>
                 </div>
                 <div className="p-4 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.08)' : 'rgba(245, 158, 11, 0.04)', borderColor: '#f59e0b' }}>
