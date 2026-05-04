@@ -370,6 +370,19 @@ export default function DNSPage() {
   }, [currentStep, packets, isDarkMode]);
 
   const handleNext = () => { if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1); };
+  const toggleDarkMode = () => {
+    if (typeof window !== 'undefined') {
+      const newMode = !isDarkMode;
+      if (newMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      localStorage.setItem('darkMode', newMode.toString());
+      setIsDarkMode(newMode);
+    }
+  };
+
   const handleReset = () => { setCurrentStep(0); setPackets([]); setPacketLogs([]); };
   const handleStepClick = (index: number) => { if (index <= currentStep + 1) setCurrentStep(index); };
 
@@ -400,8 +413,23 @@ export default function DNSPage() {
             <div className="flex items-center gap-4">
               <div className="px-4 py-2 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)', borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)' }}>
                 <div className="text-xs" style={{ color: secondaryText }}>当前步骤</div>
+              
+
                 <div className="text-xl font-bold" style={{ color: primaryBlue }}>{currentStep + 1} / {steps.length}</div>
               </div>
+<button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-lg transition-all hover:opacity-80"
+                style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', color: textColor }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {isDarkMode ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  )}
+                </svg>
+              </button>
               <button onClick={handleReset} className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:opacity-80" style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', color: textColor }}>🔄 重置</button>
               <button onClick={handleNext} disabled={currentStep >= steps.length - 1} className="px-6 py-2 rounded-lg font-semibold text-sm transition-all disabled:opacity-50" style={{ backgroundColor: primaryBlue, color: 'white' }}>下一步 →</button>
             </div>

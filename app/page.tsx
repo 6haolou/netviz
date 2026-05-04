@@ -4,8 +4,6 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
-  const [isOsiOpen, setIsOsiOpen] = useState(false);
-  const [isOsiHover, setIsOsiHover] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -55,107 +53,147 @@ export default function Home() {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    const nodes = [
-      { x: 100, y: 150, size: 20, color: '#3b82f6' },
-      { x: 300, y: 100, size: 20, color: '#3b82f6' },
-      { x: 300, y: 200, size: 20, color: '#3b82f6' },
-      { x: 500, y: 150, size: 20, color: '#3b82f6' }
-    ];
+    const W = canvas.width;
+    const H = canvas.height;
 
-    const connections = [
-      { from: 0, to: 1 },
-      { from: 0, to: 2 },
-      { from: 1, to: 3 },
-      { from: 2, to: 3 }
-    ];
+    const pcX = W * 0.15, pcY = H * 0.5;
+    const swX = W * 0.35, swY = H * 0.5;
+    const rtX = W * 0.53, rtY = H * 0.5;
+    const clX = W * 0.72, clY = H * 0.45;
+    const svX = W * 0.88, svY = H * 0.5;
 
-    const packets: any[] = [];
+    const outPkts: { progress: number; done: boolean }[] = [];
+    const inPkts: { progress: number; done: boolean }[] = [];
 
-    function createPacket() {
-      const from = Math.floor(Math.random() * nodes.length);
-      let to;
-      do {
-        to = Math.floor(Math.random() * nodes.length);
-      } while (to === from);
+    function spawn() { outPkts.push({ progress: 0, done: false }); }
+    setInterval(spawn, 2500);
 
-      packets.push({
-        from,
-        to,
-        progress: 0,
-        speed: 0.01 + Math.random() * 0.02
-      });
-    }
-
-    const interval = setInterval(createPacket, 1000);
+    const outPath = [{ x: pcX, y: pcY }, { x: swX, y: swY }, { x: rtX, y: rtY }, { x: clX, y: clY }, { x: svX, y: svY }];
+    const inPath = [...outPath].reverse();
 
     function animate() {
-      context.clearRect(0, 0, canvasEl.width, canvasEl.height);
+      const W2 = canvasEl.width, H2 = canvasEl.height;
+      context.clearRect(0, 0, W2, H2);
 
       const isDark = document.documentElement.classList.contains('dark');
-      const lineColor = isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.3)';
-      const glowColor = isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.2)';
-      const borderColor = isDark ? 'rgba(59, 130, 246, 0.5)' : 'rgba(59, 130, 246, 0.5)';
+      const lineColor = isDark ? '#374151' : '#e5e7eb';
+      const textCol = isDark ? '#9ca3af' : '#6b7280';
 
-      connections.forEach(conn => {
-        const from = nodes[conn.from];
-        const to = nodes[conn.to];
+      // Connections
+      context.strokeStyle = lineColor; context.lineWidth = 2; context.setLineDash([5, 5]);
+      const conns = [
+        [pcX + 35, pcY, swX - 25, swY],
+        [swX + 25, swY, rtX - 25, rtY],
+        [rtX + 25, rtY, clX - 35, clY - 5],
+        [clX + 35, clY + 5, svX - 20, svY],
+      ];
+      conns.forEach(c2 => { context.beginPath(); context.moveTo(c2[0], c2[1]); context.lineTo(c2[2], c2[3]); context.stroke(); });
+      context.setLineDash([]);
 
-        context.beginPath();
-        context.moveTo(from.x, from.y);
-        context.lineTo(to.x, to.y);
-        context.strokeStyle = lineColor;
-        context.lineWidth = 2;
-        context.stroke();
+      // PC
+      context.fillStyle = isDark ? '#1f2937' : '#e2e8f0';
+      context.beginPath(); context.roundRect(pcX - 22, pcY - 18, 44, 30, 4); context.fill();
+      context.fillStyle = isDark ? '#0f172a' : '#f8fafc';
+      context.beginPath(); context.roundRect(pcX - 18, pcY - 13, 36, 20, 2); context.fill();
+      context.fillStyle = '#ef4444'; context.beginPath(); context.arc(pcX - 13, pcY - 8, 1.5, 0, 2 * 3.14); context.fill();
+      context.fillStyle = '#f59e0b'; context.beginPath(); context.arc(pcX - 9, pcY - 8, 1.5, 0, 2 * 3.14); context.fill();
+      context.fillStyle = '#22c55e'; context.beginPath(); context.arc(pcX - 5, pcY - 8, 1.5, 0, 2 * 3.14); context.fill();
+      context.fillStyle = isDark ? '#1e293b' : '#e2e8f0';
+      context.beginPath(); context.roundRect(pcX - 14, pcY - 3, 28, 4, 2); context.fill();
+      context.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      context.font = '3px monospace'; context.textAlign = 'center'; context.textBaseline = 'middle';
+      context.fillText('netviz.io', pcX, pcY);
+      context.fillStyle = isDark ? '#374151' : '#cbd5e1';
+      context.fillRect(pcX - 2, pcY + 12, 4, 3); context.fillRect(pcX - 7, pcY + 15, 14, 2);
+      context.fillStyle = textColor;
+      context.font = 'bold 10px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'top';
+      context.fillText('PC', pcX, pcY + 20);
+
+      // Switch
+      context.fillStyle = isDark ? '#1e293b' : '#cbd5e1';
+      context.beginPath(); context.roundRect(swX - 18, swY - 8, 36, 16, 3); context.fill();
+      for (let i = 0; i < 4; i++) { context.fillStyle = '#22c55e'; context.beginPath(); context.arc(swX - 10 + i * 7, swY, 1.2, 0, 2 * 3.14); context.fill(); }
+      context.fillStyle = textColor;
+      context.font = 'bold 8px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'top';
+      context.fillText('Switch', swX, swY + 10);
+
+      // Router
+      context.fillStyle = isDark ? '#1e293b' : '#cbd5e1';
+      context.beginPath(); context.roundRect(rtX - 20, rtY - 10, 40, 20, 4); context.fill();
+      context.strokeStyle = lineColor; context.lineWidth = 1.5;
+      context.beginPath(); context.moveTo(rtX + 4, rtY - 10); context.lineTo(rtX + 10, rtY - 22); context.stroke();
+      context.fillStyle = '#22c55e'; context.beginPath(); context.arc(rtX + 10, rtY - 25, 2.5, 0, 2 * 3.14); context.fill();
+      context.fillStyle = isDark ? '#334155' : '#94a3b8';
+      for (let i = 0; i < 3; i++) context.fillRect(rtX - 13, rtY - 3 + i * 5, 26, 2);
+      context.fillStyle = textColor;
+      context.font = 'bold 8px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'top';
+      context.fillText('Router', rtX, rtY + 12);
+
+      // Cloud
+      context.fillStyle = isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.08)';
+      context.beginPath(); context.arc(clX - 18, clY + 4, 16, 0, 2 * 3.14); context.fill();
+      context.beginPath(); context.arc(clX + 4, clY - 5, 18, 0, 2 * 3.14); context.fill();
+      context.beginPath(); context.arc(clX + 18, clY + 4, 14, 0, 2 * 3.14); context.fill();
+      context.beginPath(); context.arc(clX + 4, clY + 8, 14, 0, 2 * 3.14); context.fill();
+      context.strokeStyle = isDark ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.2)'; context.lineWidth = 1; context.stroke();
+      context.fillStyle = isDark ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.5)';
+      context.font = 'bold 9px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle';
+      context.fillText('☁ Internet', clX + 4, clY + 4);
+
+      // Server
+      context.fillStyle = isDark ? '#1e293b' : '#cbd5e1';
+      context.beginPath(); context.roundRect(svX - 14, svY - 22, 28, 44, 3); context.fill();
+      context.fillStyle = isDark ? '#0f172a' : '#f1f5f9';
+      context.fillRect(svX - 11, svY - 16, 22, 6); context.fillRect(svX - 11, svY - 8, 22, 6); context.fillRect(svX - 11, svY, 22, 6);
+      context.fillStyle = '#22c55e'; context.beginPath(); context.arc(svX + 10, svY - 13, 1.5, 0, 2 * 3.14); context.fill();
+      context.fillStyle = '#3b82f6';
+      context.font = 'bold 7px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle';
+      context.fillText('NetViz', svX, svY + 14);
+      context.fillStyle = textColor;
+      context.font = 'bold 8px Inter, sans-serif'; context.textBaseline = 'top';
+      context.fillText('Server', svX, svY + 20);
+
+      // Outbound packets
+      outPkts.forEach((p) => {
+        if (p.done) return; p.progress += 0.006;
+        if (p.progress >= 1) { inPkts.push({ progress: 0, done: false }); p.done = true; return; }
+        const total = outPath.length - 1, seg = Math.min(Math.floor(p.progress * total), total - 1);
+        const sp = (p.progress * total) - seg;
+        const from = outPath[seg], to = outPath[seg + 1];
+        const px = from.x + (to.x - from.x) * sp, py = from.y + (to.y - from.y) * sp;
+        const g = context.createRadialGradient(px, py, 0, px, py, 10);
+        g.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); g.addColorStop(1, 'transparent');
+        context.fillStyle = g; context.beginPath(); context.arc(px, py, 10, 0, 2 * 3.14); context.fill();
+        context.fillStyle = '#3b82f6'; context.beginPath(); context.roundRect(px - 6, py - 3, 12, 6, 2); context.fill();
+        context.fillStyle = 'white'; context.font = 'bold 3px monospace'; context.textAlign = 'center'; context.textBaseline = 'middle';
+        context.fillText('GET', px, py);
       });
 
-      nodes.forEach(node => {
-        context.beginPath();
-        context.arc(node.x, node.y, node.size + 10, 0, Math.PI * 2);
-        context.fillStyle = glowColor;
-        context.fill();
-
-        context.beginPath();
-        context.arc(node.x, node.y, node.size, 0, Math.PI * 2);
-        context.fillStyle = node.color;
-        context.fill();
-
-        context.beginPath();
-        context.arc(node.x, node.y, node.size, 0, Math.PI * 2);
-        context.strokeStyle = borderColor;
-        context.lineWidth = 2;
-        context.stroke();
+      // Inbound packets
+      inPkts.forEach((p) => {
+        if (p.done) return; p.progress += 0.006;
+        if (p.progress >= 1) { p.done = true; return; }
+        const total = inPath.length - 1, seg = Math.min(Math.floor(p.progress * total), total - 1);
+        const sp = (p.progress * total) - seg;
+        const from = inPath[seg], to = inPath[seg + 1];
+        const px = from.x + (to.x - from.x) * sp, py = from.y + (to.y - from.y) * sp;
+        const g = context.createRadialGradient(px, py, 0, px, py, 10);
+        g.addColorStop(0, 'rgba(16, 185, 129, 0.5)'); g.addColorStop(1, 'transparent');
+        context.fillStyle = g; context.beginPath(); context.arc(px, py, 10, 0, 2 * 3.14); context.fill();
+        context.fillStyle = '#10b981'; context.beginPath(); context.roundRect(px - 6, py - 3, 12, 6, 2); context.fill();
+        context.fillStyle = 'white'; context.font = 'bold 3px monospace'; context.textAlign = 'center'; context.textBaseline = 'middle';
+        context.fillText('200', px, py);
       });
 
-      packets.forEach((packet, index) => {
-        const from = nodes[packet.from];
-        const to = nodes[packet.to];
-
-        const x = from.x + (to.x - from.x) * packet.progress;
-        const y = from.y + (to.y - from.y) * packet.progress;
-
-        context.beginPath();
-        context.arc(x, y, 8, 0, Math.PI * 2);
-        context.fillStyle = 'rgba(59, 130, 246, 0.6)';
-        context.fill();
-
-        context.beginPath();
-        context.arc(x, y, 4, 0, Math.PI * 2);
-        context.fillStyle = '#3b82f6';
-        context.fill();
-
-        packet.progress += packet.speed;
-        if (packet.progress > 1) {
-          packets.splice(index, 1);
-        }
-      });
+      context.fillStyle = textCol;
+      context.font = '10px Inter, sans-serif'; context.textAlign = 'center';
+      context.fillText('PC  Switch  Router  Internet  Server', W2 / 2, H2 - 8);
 
       requestAnimationFrame(animate);
     }
 
     animate();
-
-    return () => clearInterval(interval);
-  }, []);
+    const handleResize = () => {};  }, []);
 
   const bgColor = isDarkMode ? '#0a0a0a' : '#ffffff';
   const textColor = isDarkMode ? '#ededed' : '#171717';
@@ -183,146 +221,33 @@ export default function Home() {
 
             {/* 导航栏按钮 - 居中显示 */}
             <nav className="hidden md:flex items-center gap-2" style={{ marginLeft: '280px' }}>
-              <div className="relative">
-                <button
-                  onClick={() => setIsOsiOpen(!isOsiOpen)}
-                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg whitespace-nowrap"
-                  style={{ 
+              {[
+                { label: '传输层', href: '/category/transport' },
+                { label: '应用层', href: '/category/application' },
+                { label: '网络层', href: '/category/network' },
+                { label: '路由协议', href: '/category/routing' },
+                { label: '高可用性', href: '/category/availability' },
+              ].map((item, i) => (
+                <Link
+                  key={i}
+                  href={item.href}
+                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
+                  style={{
                     color: isDarkMode ? '#d1d5db' : '#374151',
                     backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
                   }}
                   onMouseEnter={(e) => {
-                    setIsOsiHover(true);
-                    setIsOsiOpen(true);  // 鼠标悬停时自动展开
                     e.currentTarget.style.backgroundColor = primaryBlue;
                     e.currentTarget.style.color = '#ffffff';
                   }}
                   onMouseLeave={(e) => {
-                    setIsOsiHover(false);
-                    setIsOsiOpen(false);  // 鼠标移开时自动关闭
                     e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
                     e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
                   }}
                 >
-                  <span>OSI 七层模型</span>
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    className="h-4 w-4 inline-block ml-1 transition-transform duration-300"
-                    style={{ 
-                      transform: isOsiOpen || isOsiHover ? 'rotate(180deg)' : 'rotate(0deg)',
-                      display: 'inline-flex',
-                      verticalAlign: 'middle'
-                    }} 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {isOsiOpen && (
-                  <div
-                    className="absolute top-full left-0 mt-2 w-48 rounded-md shadow-lg py-2 z-50 border animate-in fade-in slide-in-from-top-2 duration-200"
-                    style={{ 
-                      backgroundColor: cardBgColor, 
-                      borderColor: borderColor,
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-                    }}
-                  >
-                    {['物理层', '数据链路层', '网络层', '传输层', '会话层', '表示层', '应用层'].map((layer, index) => (
-                      <Link
-                        key={index}
-                        href="#"
-                        className="block px-4 py-2 transition-all duration-200 hover:translate-x-1"
-                        style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#eff6ff';
-                          e.currentTarget.style.color = primaryBlue;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
-                        }}
-                      >
-                        {layer}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <Link
-                href="/category/routing"
-                className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
-                style={{ 
-                  color: isDarkMode ? '#d1d5db' : '#374151',
-                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryBlue;
-                  e.currentTarget.style.color = '#ffffff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                  e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
-                }}
-              >
-                路由协议
-              </Link>
-              <Link
-                href="/category/availability"
-                className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
-                style={{ 
-                  color: isDarkMode ? '#d1d5db' : '#374151',
-                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryBlue;
-                  e.currentTarget.style.color = '#ffffff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                  e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
-                }}
-              >
-                高可用性
-              </Link>
-              <Link
-                href="#"
-                className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
-                style={{ 
-                  color: isDarkMode ? '#d1d5db' : '#374151',
-                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryBlue;
-                  e.currentTarget.style.color = '#ffffff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                  e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
-                }}
-              >
-                网络安全
-              </Link>
-              <Link
-                href="#"
-                className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
-                style={{ 
-                  color: isDarkMode ? '#d1d5db' : '#374151',
-                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryBlue;
-                  e.currentTarget.style.color = '#ffffff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                  e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
-                }}
-              >
-                网络管理
-              </Link>
+                  {item.label}
+                </Link>
+              ))}
             </nav>
 
             <div className="flex items-center space-x-4">
@@ -435,17 +360,17 @@ export default function Home() {
               按领域探索
             </h2>
             <p className="text-xl max-w-3xl mx-auto" style={{ color: secondaryTextColor }}>
-              我们的平台涵盖了网络工程的多个领域，从基础的OSI七层模型到高级的路由协议，应有尽有
+              我们的平台涵盖了网络工程的多个领域，从传输层到应用层，从路由协议到高可用性，应有尽有
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             {[
-              { title: 'OSI 七层模型', desc: '了解网络通信的七层模型，从物理层到应用层的完整架构', href: '#', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
+              { title: '传输层', desc: '了解 TCP 三次握手、四次挥手等传输层协议的工作原理', href: '/category/transport', icon: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4' },
+              { title: '应用层', desc: '了解 HTTP、DNS 等应用层协议如何为用户提供服务', href: '/category/application', icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9' },
+              { title: '网络层', desc: '学习 IP、ARP、ICMP 等网络层协议的工作原理', href: '/category/network', icon: 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z' },
               { title: '路由协议', desc: '学习 OSPF、BGP、RIP 等路由协议的工作原理和配置方法', href: '/category/routing', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-              { title: '高可用性', desc: '了解 VRRP、MSTP 等协议如何实现网络的高可用性', href: '/category/availability', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-              { title: '网络安全', desc: '学习网络安全基础知识，包括防火墙、VPN 和加密协议', href: '#', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-              { title: '网络管理', desc: '了解网络管理工具和技术，包括 SNMP、NetFlow 等', href: '#', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' }
+              { title: '高可用性', desc: '了解 VRRP、STP、MSTP 等协议如何实现网络的高可用性', href: '/category/availability', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
             ].map((item, index) => (
               <Link
                 key={index}

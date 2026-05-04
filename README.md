@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NetViz - 网络工程可视化平台
 
-## Getting Started
+通过交互式动画，直观理解网络协议、报文交互和网络拓扑。
 
-First, run the development server:
+## 技术栈
+
+- **框架**: Next.js 16 + React 19
+- **语言**: TypeScript
+- **样式**: Tailwind CSS 4
+- **动画**: Canvas API
+
+## 快速开始
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+访问 [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 页面列表
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 主页
+- 5 大分类导航（传输层/应用层/网络层/路由协议/高可用性）
+- Canvas 网络拓扑动画（PC → Switch → Router → Internet → Server）
+- 暗色/亮色模式切换
 
-## Learn More
+### 协议动画（12 个）
 
-To learn more about Next.js, take a look at the following resources:
+| 分类 | 协议 | 动画内容 |
+|:---|:---|:---|
+| 传输层 | **TCP** | 三次握手、四次挥手、数据传输、状态变迁 |
+| 应用层 | **HTTP** | 请求-响应流程、状态码 |
+| 应用层 | **DNS** | 递归/迭代查询、域名解析 |
+| 网络层 | **IP** | 数据包转发、路由 |
+| 网络层 | **ARP** | 地址解析、广播/单播 |
+| 网络层 | **ICMP** | Ping 请求/响应 |
+| 路由 | **OSPF** | 邻居状态机、5 种报文、DR/BDR 选举 |
+| 路由 | **BGP** | AS 边界、路径矢量 |
+| 路由 | **RIP** | 距离向量、路由表可视化、跳数递增 |
+| 高可用 | **VRRP** | 主备选举、故障切换、Virtual IP |
+| 高可用 | **STP** | 树形拓扑、根桥选举、端口角色、环路阻塞 |
+| 高可用 | **MSTP** | 多实例、负载均衡、VLAN 映射 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 功能
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 步骤式动画控制（逐步/跳步/重置）
+- 报文交互日志
+- 协议首部图解
+- 暗色/亮色模式
+- 分类导航

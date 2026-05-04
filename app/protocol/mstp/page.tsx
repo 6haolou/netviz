@@ -258,33 +258,102 @@ export default function MSTPPage() {
       context.lineTo(switchPositions[2].x - 45, switchPositions[2].y);
       context.stroke();
 
-      if (currentStep >= 4) {
+      // === Instance paths (steps 4+) ===
+      // Instance 1 (VLAN 10): A → B, blue
+      // Instance 2 (VLAN 20): A → C → B, green
+      const showPaths = currentStep >= 4;
+
+      if (showPaths) {
+        // Instance 2 path: A ↔ C (highlighted green)
         context.strokeStyle = '#10b981';
-        context.lineWidth = 2;
-        context.setLineDash([5, 5]);
-        context.beginPath();
-        context.moveTo(switchPositions[0].x + 45, switchPositions[0].y);
-        context.lineTo(switchPositions[2].x - 45, switchPositions[2].y);
-        context.stroke();
+        context.lineWidth = 3;
         context.setLineDash([]);
+        context.beginPath();
+        context.moveTo(switchPositions[0].x, switchPositions[0].y + 45);
+        context.lineTo(switchPositions[2].x, switchPositions[2].y - 45);
+        context.stroke();
 
-        context.fillStyle = '#10b981';
-        context.font = '10px Inter, system-ui, sans-serif';
-        context.textAlign = 'center';
-        context.fillText('VLAN 20', (switchPositions[0].x + switchPositions[2].x) / 2 + 50, (switchPositions[0].y + switchPositions[2].y) / 2 - 20);
-
+        // Instance 1 path: A ↔ B (highlighted blue)
         context.strokeStyle = primaryBlue;
-        context.lineWidth = 2;
-        context.setLineDash([5, 5]);
+        context.lineWidth = 3;
+        context.setLineDash([]);
         context.beginPath();
         context.moveTo(switchPositions[0].x - 30, switchPositions[0].y + 45);
         context.lineTo(switchPositions[1].x + 45, switchPositions[1].y);
         context.stroke();
-        context.setLineDash([]);
 
+        // C ↔ B for Instance 2 (green)
+        context.strokeStyle = '#10b981';
+        context.lineWidth = 3;
+        context.setLineDash([]);
+        context.beginPath();
+        context.moveTo(switchPositions[1].x + 45, switchPositions[1].y);
+        context.lineTo(switchPositions[2].x - 45, switchPositions[2].y);
+        context.stroke();
+
+        // Labels
         context.fillStyle = primaryBlue;
-        context.font = '10px Inter, system-ui, sans-serif';
-        context.fillText('VLAN 10', switchPositions[0].x - 60, (switchPositions[0].y + switchPositions[1].y) / 2 + 40);
+        context.font = 'bold 11px Inter, system-ui, sans-serif';
+        context.textAlign = 'center';
+        context.fillText('VLAN 10 (Instance 1)', switchPositions[0].x - 55, (switchPositions[0].y + switchPositions[1].y) / 2 + 40);
+
+        context.fillStyle = '#10b981';
+        context.font = 'bold 11px Inter, system-ui, sans-serif';
+        context.fillText('VLAN 20 (Instance 2)', (switchPositions[0].x + switchPositions[2].x) / 2 + 45, (switchPositions[0].y + switchPositions[2].y) / 2 - 20);
+
+        // === Animated traffic flow ===
+        // Instance 1 traffic: blue data packets flowing A↔B
+        const numTraffic1 = 3;
+        for (let i = 0; i < numTraffic1; i++) {
+          const t = ((timeRef.current * 0.5 + i * 1.2) % 4) / 4;
+          const ax = switchPositions[0].x - 30;
+          const ay = switchPositions[0].y + 45;
+          const bx = switchPositions[1].x + 45;
+          const by = switchPositions[1].y;
+          const tx = ax + (bx - ax) * t;
+          const ty = ay + (by - ay) * t;
+          const alpha = t < 0.1 ? t * 10 : (t > 0.9 ? (1 - t) * 10 : 1);
+          context.fillStyle = `rgba(59, 130, 246, ${alpha * 0.7})`;
+          context.beginPath();
+          context.arc(tx, ty, 6, 0, Math.PI * 2);
+          context.fill();
+        }
+
+        // Instance 2 traffic: green data packets flowing A↔C↔B
+        // Segment A→C
+        for (let i = 0; i < 2; i++) {
+          const t = ((timeRef.current * 0.4 + i * 1.8) % 5) / 5;
+          const ax = switchPositions[0].x;
+          const ay = switchPositions[0].y + 45;
+          const cx = switchPositions[2].x;
+          const cy = switchPositions[2].y - 45;
+          const tx = ax + (cx - ax) * t;
+          const ty = ay + (cy - ay) * t;
+          const alpha = t < 0.1 ? t * 10 : (t > 0.9 ? (1 - t) * 10 : 1);
+          if (t < 0.95) {
+            context.fillStyle = `rgba(16, 185, 129, ${alpha * 0.7})`;
+            context.beginPath();
+            context.arc(tx, ty, 6, 0, Math.PI * 2);
+            context.fill();
+          }
+        }
+        // Segment C→B
+        for (let i = 0; i < 2; i++) {
+          const t = ((timeRef.current * 0.4 + i * 1.8) % 5) / 5;
+          const cx = switchPositions[2].x - 45;
+          const cy = switchPositions[2].y;
+          const bx = switchPositions[1].x + 45;
+          const by = switchPositions[1].y;
+          const tx = cx + (bx - cx) * t;
+          const ty = cy + (by - cy) * t;
+          const alpha = t < 0.1 ? t * 10 : (t > 0.9 ? (1 - t) * 10 : 1);
+          if (t < 0.95) {
+            context.fillStyle = `rgba(16, 185, 129, ${alpha * 0.7})`;
+            context.beginPath();
+            context.arc(tx, ty, 6, 0, Math.PI * 2);
+            context.fill();
+          }
+        }
       }
 
       drawSwitch(switchPositions[0].x, switchPositions[0].y, switchLabels[0], switchMacs[0], 0);
@@ -424,6 +493,19 @@ export default function MSTPPage() {
       setCurrentStep(currentStep + 1);
     }
   };
+  const toggleDarkMode = () => {
+    if (typeof window !== 'undefined') {
+      const newMode = !isDarkMode;
+      if (newMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      localStorage.setItem('darkMode', newMode.toString());
+      setIsDarkMode(newMode);
+    }
+  };
+
 
   const handleReset = () => {
     setCurrentStep(0);
@@ -464,8 +546,23 @@ export default function MSTPPage() {
             <div className="flex items-center gap-4">
               <div className="px-4 py-2 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)', borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)' }}>
                 <div className="text-xs" style={{ color: secondaryText }}>当前步骤</div>
+              
+
                 <div className="text-xl font-bold" style={{ color: primaryBlue }}>{currentStep + 1} / {steps.length}</div>
               </div>
+<button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-lg transition-all hover:opacity-80"
+                style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', color: textColor }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {isDarkMode ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  )}
+                </svg>
+              </button>
               <button onClick={handleReset} className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:opacity-80" style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', color: textColor }}>
                 重置
               </button>
@@ -486,6 +583,222 @@ export default function MSTPPage() {
               <span style={{ color: '#8b5cf6', fontWeight: 600 }}>MST 域：</span>具有相同域名、修订级别和 VLAN 映射的交换机属于同一个 MST 域。<br/>
               <span style={{ color: '#10b981', fontWeight: 600 }}>负载均衡：</span>不同实例选择不同的根桥，流量走不同路径，提高网络利用率。
             </p>
+          </div>
+
+          <div className="rounded-xl border p-6 mb-6" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
+            <h2 className="text-xl font-bold mb-4" style={{ color: primaryBlue }}>二、MSTP 与 STP/RSTP 对比</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="p-4 rounded-lg border-2" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)', borderColor: primaryBlue }}>
+                <h3 className="font-bold text-lg mb-3" style={{ color: primaryBlue }}>STP</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryBlue }} />
+                    <span style={{ color: textColor }}>单一生成树实例</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryBlue }} />
+                    <span style={{ color: textColor }}>收敛时间 30-50 秒</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryBlue }} />
+                    <span style={{ color: textColor }}>所有 VLAN 共享路径</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryBlue }} />
+                    <span style={{ color: textColor }}>IEEE 802.1D</span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg border-2" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)', borderColor: '#10b981' }}>
+                <h3 className="font-bold text-lg mb-3" style={{ color: '#10b981' }}>RSTP</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10b981' }} />
+                    <span style={{ color: textColor }}>快速收敛（1-2 秒）</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10b981' }} />
+                    <span style={{ color: textColor }}>单一生成树实例</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10b981' }} />
+                    <span style={{ color: textColor }}>端口角色优化</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10b981' }} />
+                    <span style={{ color: textColor }}>IEEE 802.1w</span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg border-2" style={{ backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.05)', borderColor: '#8b5cf6' }}>
+                <h3 className="font-bold text-lg mb-3" style={{ color: '#8b5cf6' }}>MSTP</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8b5cf6' }} />
+                    <span style={{ color: textColor }}>多实例负载均衡</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8b5cf6' }} />
+                    <span style={{ color: textColor }}>快速收敛（1-2 秒）</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8b5cf6' }} />
+                    <span style={{ color: textColor }}>MST 域概念</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8b5cf6' }} />
+                    <span style={{ color: textColor }}>IEEE 802.1s</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border p-6 mb-6" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
+            <h2 className="text-xl font-bold mb-4" style={{ color: primaryBlue }}>三、MSTP 报文首部详解</h2>
+            <div className="mb-6">
+              <p className="text-sm leading-relaxed mb-4" style={{ color: textColor }}>
+                MSTP 基于 RSTP 协议，使用 BPDU（Bridge Protocol Data Unit）进行通信。MSTP BPDU 在 RSTP BPDU 基础上增加了 MST 配置信息，用于 MST 域内的一致性检查。
+              </p>
+              
+              <div className="overflow-x-auto mb-6">
+                <div className="min-w-[800px]">
+                  <div className="grid grid-cols-32 gap-0.5 text-center text-xs font-mono mb-4">
+                    <div className="col-span-16 p-2 rounded-tl-lg" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6' }}>
+                      <div className="font-bold" style={{ color: primaryBlue }}>协议标识符</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>16位</div>
+                      <div className="text-xs" style={{ color: textColor }}>0x0000（STP）</div>
+                    </div>
+                    <div className="col-span-8 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.2)', border: '1px solid #8b5cf6' }}>
+                      <div className="font-bold" style={{ color: '#8b5cf6' }}>协议版本</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>8位</div>
+                      <div className="text-xs" style={{ color: textColor }}>3=MSTP</div>
+                    </div>
+                    <div className="col-span-8 p-2 rounded-tr-lg" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981' }}>
+                      <div className="font-bold" style={{ color: '#10b981' }}>BPDU 类型</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>8位</div>
+                      <div className="text-xs" style={{ color: textColor }}>0x02=RST/MST</div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-32 gap-0.5 text-center text-xs font-mono mb-4">
+                    <div className="col-span-16 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444' }}>
+                      <div className="font-bold" style={{ color: '#ef4444' }}>标志</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>16位</div>
+                      <div className="text-xs" style={{ color: textColor }}>TC、TCA、端口角色等</div>
+                    </div>
+                    <div className="col-span-16 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(249, 115, 22, 0.3)' : 'rgba(249, 115, 22, 0.2)', border: '1px solid #f97316' }}>
+                      <div className="font-bold" style={{ color: '#f97316' }}>根桥 ID</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>64位</div>
+                      <div className="text-xs" style={{ color: textColor }}>优先级 + MAC 地址</div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-32 gap-0.5 text-center text-xs font-mono mb-4">
+                    <div className="col-span-16 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(168, 85, 247, 0.3)' : 'rgba(168, 85, 247, 0.2)', border: '1px solid #a855f7' }}>
+                      <div className="font-bold" style={{ color: '#a855f7' }}>根路径开销</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>32位</div>
+                      <div className="text-xs" style={{ color: textColor }}>到达根桥的路径开销</div>
+                    </div>
+                    <div className="col-span-16 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(236, 72, 153, 0.3)' : 'rgba(236, 72, 153, 0.2)', border: '1px solid #ec4899' }}>
+                      <div className="font-bold" style={{ color: '#ec4899' }}>桥 ID</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>64位</div>
+                      <div className="text-xs" style={{ color: textColor }}>发送 BPDU 的桥 ID</div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-32 gap-0.5 text-center text-xs font-mono mb-4">
+                    <div className="col-span-8 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(14, 165, 233, 0.3)' : 'rgba(14, 165, 233, 0.2)', border: '1px solid #0ea5e9' }}>
+                      <div className="font-bold" style={{ color: '#0ea5e9' }}>端口 ID</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>16位</div>
+                      <div className="text-xs" style={{ color: textColor }}>发送端口标识</div>
+                    </div>
+                    <div className="col-span-8 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(34, 197, 94, 0.3)' : 'rgba(34, 197, 94, 0.2)', border: '1px solid #22c55e' }}>
+                      <div className="font-bold" style={{ color: '#22c55e' }}>消息年龄</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>16位</div>
+                      <div className="text-xs" style={{ color: textColor }}>BPDU 生存时间</div>
+                    </div>
+                    <div className="col-span-8 p-2" style={{ backgroundColor: isDarkMode ? 'rgba(107, 114, 128, 0.3)' : 'rgba(107, 114, 128, 0.2)', border: '1px solid #64748b' }}>
+                      <div className="font-bold" style={{ color: '#64748b' }}>最大年龄</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>16位</div>
+                      <div className="text-xs" style={{ color: textColor }}>BPDU 最大生存时间</div>
+                    </div>
+                    <div className="col-span-8 p-2 rounded-br-lg" style={{ backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.2)', border: '1px solid #f59e0b' }}>
+                      <div className="font-bold" style={{ color: '#f59e0b' }}>Hello 时间</div>
+                      <div className="text-xs" style={{ color: secondaryText }}>16位</div>
+                      <div className="text-xs" style={{ color: textColor }}>BPDU 发送间隔</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="p-4 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.04)', borderColor: primaryBlue }}>
+                  <div className="font-bold text-sm mb-2" style={{ color: primaryBlue }}>🔧 MSTP 配置信息</div>
+                  <div className="space-y-1.5 text-xs" style={{ color: secondaryText }}>
+                    <div className="flex justify-between p-1.5 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)' }}>
+                      <span><span className="font-bold" style={{ color: '#3b82f6' }}>MST 配置 ID</span></span>
+                      <span>域名 + 修订级别</span>
+                    </div>
+                    <div className="flex justify-between p-1.5 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)' }}>
+                      <span><span className="font-bold" style={{ color: '#10b981' }}>VLAN 映射表</span></span>
+                      <span>VLAN 到实例的映射</span>
+                    </div>
+                    <div className="flex justify-between p-1.5 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)' }}>
+                      <span><span className="font-bold" style={{ color: '#f59e0b' }}>配置摘要</span></span>
+                      <span>MD5 哈希校验</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.08)' : 'rgba(16, 185, 129, 0.04)', borderColor: '#10b981' }}>
+                  <div className="font-bold text-sm mb-2" style={{ color: '#10b981' }}>⚡ 常见配置命令</div>
+                  <div className="space-y-1.5 text-xs" style={{ color: secondaryText }}>
+                    <div className="flex justify-between p-1.5 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)' }}>
+                      <span><span className="font-bold" style={{ color: '#3b82f6' }}>spanning-tree mode mst</span></span>
+                      <span>启用 MSTP</span>
+                    </div>
+                    <div className="flex justify-between p-1.5 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)' }}>
+                      <span><span className="font-bold" style={{ color: '#10b981' }}>spanning-tree mst config</span></span>
+                      <span>进入 MST 配置</span>
+                    </div>
+                    <div className="flex justify-between p-1.5 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)' }}>
+                      <span><span className="font-bold" style={{ color: '#f59e0b' }}>instance 1 vlan 10</span></span>
+                      <span>VLAN 映射</span>
+                    </div>
+                    <div className="flex justify-between p-1.5 rounded" style={{ backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)' }}>
+                      <span><span className="font-bold" style={{ color: '#8b5cf6' }}>name AZURE</span></span>
+                      <span>设置域名</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border p-6 mb-6" style={{ backgroundColor: cardBg, borderColor: borderColor }}>
+            <h2 className="text-xl font-bold mb-4" style={{ color: primaryBlue }}>四、MSTP 实例与端口角色</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="p-4 rounded-lg border-2" style={{ backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)', borderColor: primaryBlue }}>
+                <div className="text-2xl font-bold mb-2" style={{ color: primaryBlue }}>4096</div>
+                <div className="font-bold text-sm" style={{ color: textColor }}>默认优先级</div>
+                <p className="text-xs mt-1" style={{ color: secondaryText }}>桥优先级（步长 4096）</p>
+              </div>
+              <div className="p-4 rounded-lg border-2" style={{ backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)', borderColor: '#10b981' }}>
+                <div className="text-2xl font-bold mb-2" style={{ color: '#10b981' }}>64</div>
+                <div className="font-bold text-sm" style={{ color: textColor }}>最大实例数</div>
+                <p className="text-xs mt-1" style={{ color: secondaryText }}>最多支持 64 个实例</p>
+              </div>
+              <div className="p-4 rounded-lg border-2" style={{ backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.05)', borderColor: '#8b5cf6' }}>
+                <div className="text-2xl font-bold mb-2" style={{ color: '#8b5cf6' }}>2s</div>
+                <div className="font-bold text-sm" style={{ color: textColor }}>收敛时间</div>
+                <p className="text-xs mt-1" style={{ color: secondaryText }}>快速收敛（RSTP 基础）</p>
+              </div>
+              <div className="p-4 rounded-lg border-2" style={{ backgroundColor: isDarkMode ? 'rgba(249, 115, 22, 0.1)' : 'rgba(249, 115, 22, 0.05)', borderColor: '#f97316' }}>
+                <div className="text-2xl font-bold mb-2" style={{ color: '#f97316' }}>4096</div>
+                <div className="font-bold text-sm" style={{ color: textColor }}>VLAN 范围</div>
+                <p className="text-xs mt-1" style={{ color: secondaryText }}>每个实例最多 4096 VLAN</p>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
