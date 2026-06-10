@@ -1206,7 +1206,7 @@ export default function OSPFPage() {
                       <th className="p-3 text-center font-bold" style={{ color: primaryBlue }}>Stub 区域</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y" style={{ divideColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
+                  <tbody>
                     <tr style={{ backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)' }}>
                       <td className="p-3 font-bold" style={{ color: textColor }}>Type 1</td>
                       <td className="p-3" style={{ color: textColor }}>Router LSA<br/><span className="text-xs" style={{ color: secondaryText }}>(路由器 LSA)</span></td>
