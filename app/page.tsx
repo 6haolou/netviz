@@ -204,23 +204,37 @@ export default function Home() {
   const headerBg = isDarkMode ? '#0a0a0a' : '#ffffff';
   const headerBorder = isDarkMode ? '#1e1e1e' : '#e5e7eb';
   const primaryBlue = '#3b82f6';
+  const glassBg = '#3b82f6';
 
   return (
-    <div className="min-h-screen font-sans" style={{ backgroundColor: bgColor, color: textColor }}>
+    <div className="relative min-h-screen font-sans glass-bg" style={{ color: textColor }}>
+      {/* 装饰性浮动光晕 */}
+      <div className="glass-orb" style={{ width: '400px', height: '400px', top: '-10%', left: '-5%', background: 'linear-gradient(135deg, rgba(102,126,234,0.3), rgba(118,75,162,0.1))', filter: 'blur(60px)', animation: 'float 20s ease-in-out infinite' }} />
+      <div className="glass-orb" style={{ width: '350px', height: '350px', top: '40%', right: '-8%', background: 'linear-gradient(135deg, rgba(118,75,162,0.25), rgba(246,211,101,0.08))', filter: 'blur(50px)', animation: 'float 25s ease-in-out infinite 5s' }} />
+      <div className="glass-orb" style={{ width: '300px', height: '300px', bottom: '5%', left: '10%', background: 'linear-gradient(135deg, rgba(102,126,234,0.2), rgba(246,211,101,0.05))', filter: 'blur(55px)', animation: 'float 22s ease-in-out infinite 10s' }} />
+
       <header
-        className="sticky top-0 z-50 border-b"
-        style={{ backgroundColor: headerBg, borderColor: headerBorder }}
+        className="sticky top-0 z-50"
+        style={{
+          backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(24px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(200%)',
+          borderBottom: '1px solid ' + (isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.2)'),
+        }}
       >
         <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            {/* Logo 和平台名称 - 固定在左上角 */}
-            <Link href="/" className="flex items-center flex-shrink-0" style={{ position: 'fixed', top: '16px', left: '16px', zIndex: 60 }}>
-              <h1 className="text-2xl font-bold" style={{ color: primaryBlue }}>NetViz</h1>
-              <span className="ml-2 text-lg" style={{ color: secondaryTextColor }}>网络工程可视化</span>
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm" style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)', color: 'white' }}>N</div>
+              <div>
+                <div className="text-base font-bold leading-tight" style={{ color: isDarkMode ? '#ffffff' : '#171717' }}>NetViz</div>
+                <div className="text-xs leading-tight" style={{ color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>网络工程可视化</div>
+              </div>
             </Link>
 
-            {/* 导航栏按钮 - 居中显示 */}
-            <nav className="hidden md:flex items-center gap-2" style={{ marginLeft: '280px' }}>
+            {/* 导航 */}
+            <nav className="hidden md:flex items-center gap-1">
               {[
                 { label: '传输层', href: '/category/transport' },
                 { label: '应用层', href: '/category/application' },
@@ -231,44 +245,28 @@ export default function Home() {
                 <Link
                   key={i}
                   href={item.href}
-                  className="px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
-                  style={{
-                    color: isDarkMode ? '#d1d5db' : '#374151',
-                    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = primaryBlue;
-                    e.currentTarget.style.color = '#ffffff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                    e.currentTarget.style.color = isDarkMode ? '#d1d5db' : '#374151';
-                  }}
+                  className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  style={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#667eea'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'; }}
                 >
                   {item.label}
                 </Link>
               ))}
             </nav>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-3">
               <input
                 type="text"
-                placeholder="搜索动画..."
-                className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-                style={{
-                  borderColor: borderColor,
-                  backgroundColor: cardBgColor,
-                  color: textColor
-                }}
+                placeholder="搜索协议..."
+                className="glass-input w-44"
               />
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-md transition-colors duration-300"
-                style={{ backgroundColor: 'transparent' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? '#1f2937' : '#f3f4f6'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                className="glass-btn w-9 h-9 flex items-center justify-center rounded-xl p-0"
+                style={{ border: '1px solid ' + (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)') }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: isDarkMode ? '#d1d5db' : '#374151' }}>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: isDarkMode ? '#fbbf24' : '#667eea' }}>
                   {isDarkMode ? (
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                   ) : (
@@ -293,19 +291,13 @@ export default function Home() {
             <div className="mt-10 flex justify-center space-x-6">
               <Link
                 href="#protocols"
-                className="px-8 py-3 font-medium rounded-lg transition-colors duration-300"
-                style={{ backgroundColor: primaryBlue, color: '#ffffff' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = primaryBlue}
+                className="glass-btn px-8 py-3 rounded-xl"
               >
                 开始探索
               </Link>
               <Link
                 href="#features"
-                className="px-8 py-3 border font-medium rounded-lg transition-colors duration-300"
-                style={{ borderColor: borderColor, backgroundColor: 'transparent', color: textColor }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? '#1f2937' : '#f3f4f6'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                className="glass-btn px-8 py-3 rounded-xl"
               >
                 了解更多
               </Link>
@@ -315,8 +307,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
               <div
-                className="h-96 rounded-2xl shadow-lg overflow-hidden"
-                style={{ backgroundColor: cardBgColor }}
+                className="glass-strong h-96 rounded-2xl overflow-hidden"
               >
                 <canvas ref={canvasRef} className="w-full h-full"></canvas>
               </div>
