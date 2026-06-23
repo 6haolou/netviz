@@ -5,7 +5,13 @@ import { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+  };
 
   const toggleDarkMode = () => {
     if (typeof window !== 'undefined') {
@@ -207,7 +213,17 @@ export default function Home() {
   const glassBg = '#3b82f6';
 
   return (
-    <div className="relative min-h-screen font-sans" style={{ backgroundColor: bgColor, color: textColor }}>
+    <div ref={bgRef} className="relative min-h-screen font-sans" style={{ backgroundColor: bgColor, color: textColor }} onMouseMove={handleMouseMove}>
+      {/* Mouse spotlight glow */}
+      <div className="fixed pointer-events-none z-0" style={{
+        width: '600px',
+        height: '600px',
+        borderRadius: '50%',
+        background: isDarkMode ? 'radial-gradient(circle, rgba(102,126,234,0.12) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(102,126,234,0.04) 0%, transparent 70%)',
+        left: mousePos.x - 300,
+        top: mousePos.y - 300,
+        transition: 'left 0.3s ease-out, top 0.3s ease-out',
+      }} />
       {/* Floating orbs - only in dark mode */}
       {isDarkMode && (
         <>
