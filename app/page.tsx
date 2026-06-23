@@ -59,20 +59,27 @@ export default function Home() {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
+    // Force initial size
+    if (canvas.width === 0) canvas.width = canvas.parentElement?.clientWidth || 600;
+    if (canvas.height === 0) canvas.height = canvas.parentElement?.clientHeight || 450;
+
     const W = canvas.width;
     const H = canvas.height;
 
-    const pcX = W * 0.15, pcY = H * 0.5;
-    const swX = W * 0.35, swY = H * 0.5;
-    const rtX = W * 0.53, rtY = H * 0.5;
-    const clX = W * 0.72, clY = H * 0.45;
+    const scale = Math.min(W, 700) / 500;
+    const s = (v: number) => v * scale;
+
+    const pcX = W * 0.12, pcY = H * 0.5;
+    const swX = W * 0.32, swY = H * 0.5;
+    const rtX = W * 0.5, rtY = H * 0.5;
+    const clX = W * 0.7, clY = H * 0.45;
     const svX = W * 0.88, svY = H * 0.5;
 
     const outPkts: { progress: number; done: boolean }[] = [];
     const inPkts: { progress: number; done: boolean }[] = [];
 
     function spawn() { outPkts.push({ progress: 0, done: false }); }
-    setInterval(spawn, 2500);
+    const interval = setInterval(spawn, 2500);
 
     const outPath = [{ x: pcX, y: pcY }, { x: swX, y: swY }, { x: rtX, y: rtY }, { x: clX, y: clY }, { x: svX, y: svY }];
     const inPath = [...outPath].reverse();
@@ -86,78 +93,88 @@ export default function Home() {
       const textCol = isDark ? '#9ca3af' : '#6b7280';
 
       // Connections
-      context.strokeStyle = lineColor; context.lineWidth = 2; context.setLineDash([5, 5]);
+      context.strokeStyle = lineColor; context.lineWidth = 3 * scale; context.setLineDash([5 * scale, 5 * scale]);
       const conns = [
-        [pcX + 35, pcY, swX - 25, swY],
-        [swX + 25, swY, rtX - 25, rtY],
-        [rtX + 25, rtY, clX - 35, clY - 5],
-        [clX + 35, clY + 5, svX - 20, svY],
+        [pcX + 50 * scale, pcY, swX - 35 * scale, swY],
+        [swX + 35 * scale, swY, rtX - 35 * scale, rtY],
+        [rtX + 35 * scale, rtY, clX - 45 * scale, clY - 5 * scale],
+        [clX + 45 * scale, clY + 5 * scale, svX - 30 * scale, svY],
       ];
       conns.forEach(c2 => { context.beginPath(); context.moveTo(c2[0], c2[1]); context.lineTo(c2[2], c2[3]); context.stroke(); });
       context.setLineDash([]);
 
       // PC
+      const pcW = 50 * scale, pcH = 34 * scale;
       context.fillStyle = isDark ? '#1f2937' : '#e2e8f0';
-      context.beginPath(); context.roundRect(pcX - 22, pcY - 18, 44, 30, 4); context.fill();
+      context.beginPath(); context.roundRect(pcX - pcW/2, pcY - pcH/2, pcW, pcH, 6 * scale); context.fill();
       context.fillStyle = isDark ? '#0f172a' : '#f8fafc';
-      context.beginPath(); context.roundRect(pcX - 18, pcY - 13, 36, 20, 2); context.fill();
-      context.fillStyle = '#ef4444'; context.beginPath(); context.arc(pcX - 13, pcY - 8, 1.5, 0, 2 * 3.14); context.fill();
-      context.fillStyle = '#f59e0b'; context.beginPath(); context.arc(pcX - 9, pcY - 8, 1.5, 0, 2 * 3.14); context.fill();
-      context.fillStyle = '#22c55e'; context.beginPath(); context.arc(pcX - 5, pcY - 8, 1.5, 0, 2 * 3.14); context.fill();
+      context.beginPath(); context.roundRect(pcX - pcW/2 + 4 * scale, pcY - pcH/2 + 5 * scale, pcW - 8 * scale, pcH - 14 * scale, 3 * scale); context.fill();
+      // Browser dots
+      const dotR = 2.5 * scale;
+      context.fillStyle = '#ef4444'; context.beginPath(); context.arc(pcX - pcW/4, pcY - pcH/4 + 3 * scale, dotR, 0, 2 * 3.14); context.fill();
+      context.fillStyle = '#f59e0b'; context.beginPath(); context.arc(pcX - pcW/4 + 6 * scale, pcY - pcH/4 + 3 * scale, dotR, 0, 2 * 3.14); context.fill();
+      context.fillStyle = '#22c55e'; context.beginPath(); context.arc(pcX - pcW/4 + 12 * scale, pcY - pcH/4 + 3 * scale, dotR, 0, 2 * 3.14); context.fill();
+      // URL bar
       context.fillStyle = isDark ? '#1e293b' : '#e2e8f0';
-      context.beginPath(); context.roundRect(pcX - 14, pcY - 3, 28, 4, 2); context.fill();
+      context.beginPath(); context.roundRect(pcX - 16 * scale, pcY - 3 * scale, 32 * scale, 6 * scale, 2 * scale); context.fill();
       context.fillStyle = isDark ? '#64748b' : '#94a3b8';
-      context.font = '3px monospace'; context.textAlign = 'center'; context.textBaseline = 'middle';
-      context.fillText('netviz.io', pcX, pcY);
+      context.font = `${6 * scale}px monospace`; context.textAlign = 'center'; context.textBaseline = 'middle';
+      context.fillText('netviz.io', pcX, pcY + 4 * scale);
+      // Stand
       context.fillStyle = isDark ? '#374151' : '#cbd5e1';
-      context.fillRect(pcX - 2, pcY + 12, 4, 3); context.fillRect(pcX - 7, pcY + 15, 14, 2);
+      context.fillRect(pcX - 3 * scale, pcY + pcH/2 - 2 * scale, 6 * scale, 5 * scale);
+      context.fillRect(pcX - 10 * scale, pcY + pcH/2 + 3 * scale, 20 * scale, 3 * scale);
       context.fillStyle = textColor;
-      context.font = 'bold 10px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'top';
-      context.fillText('PC', pcX, pcY + 20);
+      context.font = `bold ${12 * scale}px Inter, sans-serif`; context.textAlign = 'center'; context.textBaseline = 'top';
+      context.fillText('PC', pcX, pcY + pcH/2 + 8 * scale);
+
 
       // Switch
       context.fillStyle = isDark ? '#1e293b' : '#cbd5e1';
-      context.beginPath(); context.roundRect(swX - 18, swY - 8, 36, 16, 3); context.fill();
-      for (let i = 0; i < 4; i++) { context.fillStyle = '#22c55e'; context.beginPath(); context.arc(swX - 10 + i * 7, swY, 1.2, 0, 2 * 3.14); context.fill(); }
+      context.beginPath(); context.roundRect(swX - 25 * scale, swY - 12 * scale, 50 * scale, 24 * scale, 4 * scale); context.fill();
+      for (let i = 0; i < 4; i++) { context.fillStyle = '#22c55e'; context.beginPath(); context.arc(swX - 15 * scale + i * 10 * scale, swY, 2 * scale, 0, 2 * 3.14); context.fill(); }
       context.fillStyle = textColor;
-      context.font = 'bold 8px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'top';
-      context.fillText('Switch', swX, swY + 10);
+      context.font = `bold ${10 * scale}px Inter, sans-serif`; context.textAlign = 'center'; context.textBaseline = 'top';
+      context.fillText('Switch', swX, swY + 14 * scale);
 
       // Router
       context.fillStyle = isDark ? '#1e293b' : '#cbd5e1';
-      context.beginPath(); context.roundRect(rtX - 20, rtY - 10, 40, 20, 4); context.fill();
-      context.strokeStyle = lineColor; context.lineWidth = 1.5;
-      context.beginPath(); context.moveTo(rtX + 4, rtY - 10); context.lineTo(rtX + 10, rtY - 22); context.stroke();
-      context.fillStyle = '#22c55e'; context.beginPath(); context.arc(rtX + 10, rtY - 25, 2.5, 0, 2 * 3.14); context.fill();
+      context.beginPath(); context.roundRect(rtX - 28 * scale, rtY - 14 * scale, 56 * scale, 28 * scale, 5 * scale); context.fill();
+      context.strokeStyle = lineColor; context.lineWidth = 2 * scale;
+      context.beginPath(); context.moveTo(rtX + 5 * scale, rtY - 14 * scale); context.lineTo(rtX + 14 * scale, rtY - 30 * scale); context.stroke();
+      context.fillStyle = '#22c55e'; context.beginPath(); context.arc(rtX + 14 * scale, rtY - 34 * scale, 3.5 * scale, 0, 2 * 3.14); context.fill();
       context.fillStyle = isDark ? '#334155' : '#94a3b8';
-      for (let i = 0; i < 3; i++) context.fillRect(rtX - 13, rtY - 3 + i * 5, 26, 2);
+      for (let i = 0; i < 3; i++) context.fillRect(rtX - 18 * scale, rtY - 5 * scale + i * 7 * scale, 36 * scale, 3 * scale);
       context.fillStyle = textColor;
-      context.font = 'bold 8px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'top';
-      context.fillText('Router', rtX, rtY + 12);
+      context.font = `bold ${10 * scale}px Inter, sans-serif`; context.textAlign = 'center'; context.textBaseline = 'top';
+      context.fillText('Router', rtX, rtY + 16 * scale);
 
       // Cloud
+      const cloudR = 22 * scale;
       context.fillStyle = isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.08)';
-      context.beginPath(); context.arc(clX - 18, clY + 4, 16, 0, 2 * 3.14); context.fill();
-      context.beginPath(); context.arc(clX + 4, clY - 5, 18, 0, 2 * 3.14); context.fill();
-      context.beginPath(); context.arc(clX + 18, clY + 4, 14, 0, 2 * 3.14); context.fill();
-      context.beginPath(); context.arc(clX + 4, clY + 8, 14, 0, 2 * 3.14); context.fill();
-      context.strokeStyle = isDark ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.2)'; context.lineWidth = 1; context.stroke();
+      context.beginPath(); context.arc(clX - cloudR, clY + 4 * scale, cloudR, 0, 2 * 3.14); context.fill();
+      context.beginPath(); context.arc(clX + 5 * scale, clY - 6 * scale, cloudR + 2 * scale, 0, 2 * 3.14); context.fill();
+      context.beginPath(); context.arc(clX + cloudR, clY + 4 * scale, cloudR - 2 * scale, 0, 2 * 3.14); context.fill();
+      context.beginPath(); context.arc(clX + 5 * scale, clY + 8 * scale, cloudR - 2 * scale, 0, 2 * 3.14); context.fill();
+      context.strokeStyle = isDark ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.2)'; context.lineWidth = 1.5 * scale; context.stroke();
       context.fillStyle = isDark ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.5)';
-      context.font = 'bold 9px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle';
-      context.fillText('☁ Internet', clX + 4, clY + 4);
+      context.font = `bold ${11 * scale}px Inter, sans-serif`; context.textAlign = 'center'; context.textBaseline = 'middle';
+      context.fillText('☁ Internet', clX + 5 * scale, clY + 5 * scale);
 
       // Server
       context.fillStyle = isDark ? '#1e293b' : '#cbd5e1';
-      context.beginPath(); context.roundRect(svX - 14, svY - 22, 28, 44, 3); context.fill();
+      context.beginPath(); context.roundRect(svX - 18 * scale, svY - 28 * scale, 36 * scale, 56 * scale, 4 * scale); context.fill();
       context.fillStyle = isDark ? '#0f172a' : '#f1f5f9';
-      context.fillRect(svX - 11, svY - 16, 22, 6); context.fillRect(svX - 11, svY - 8, 22, 6); context.fillRect(svX - 11, svY, 22, 6);
-      context.fillStyle = '#22c55e'; context.beginPath(); context.arc(svX + 10, svY - 13, 1.5, 0, 2 * 3.14); context.fill();
+      context.fillRect(svX - 14 * scale, svY - 20 * scale, 28 * scale, 7 * scale);
+      context.fillRect(svX - 14 * scale, svY - 10 * scale, 28 * scale, 7 * scale);
+      context.fillRect(svX - 14 * scale, svY, 28 * scale, 7 * scale);
+      context.fillStyle = '#22c55e'; context.beginPath(); context.arc(svX + 13 * scale, svY - 16 * scale, 2.5 * scale, 0, 2 * 3.14); context.fill();
       context.fillStyle = '#3b82f6';
-      context.font = 'bold 7px Inter, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle';
-      context.fillText('NetViz', svX, svY + 14);
+      context.font = `bold ${9 * scale}px Inter, sans-serif`; context.textAlign = 'center'; context.textBaseline = 'middle';
+      context.fillText('NetViz', svX, svY + 18 * scale);
       context.fillStyle = textColor;
-      context.font = 'bold 8px Inter, sans-serif'; context.textBaseline = 'top';
-      context.fillText('Server', svX, svY + 20);
+      context.font = `bold ${10 * scale}px Inter, sans-serif`; context.textBaseline = 'top';
+      context.fillText('Server', svX, svY + 26 * scale);
 
       // Outbound packets
       outPkts.forEach((p) => {
@@ -199,7 +216,13 @@ export default function Home() {
     }
 
     animate();
-    const handleResize = () => {};  }, []);
+    const handleResize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (interval) clearInterval(interval);
+    };
+  }, []);
 
   const bgColor = isDarkMode ? '#0a0a0a' : '#ffffff';
   const textColor = isDarkMode ? '#ededed' : '#171717';
@@ -327,7 +350,8 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
               <div
-                className="glass-strong h-96 rounded-2xl overflow-hidden"
+                className="glass-strong h-[500px] rounded-2xl overflow-hidden"
+                style={{ background: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.4)' }}
               >
                 <canvas ref={canvasRef} className="w-full h-full"></canvas>
               </div>
