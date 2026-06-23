@@ -11,6 +11,10 @@
   background-color: var(--background);
 }
 
+html:not(.dark) {
+  background-color: #ffffff;
+}
+
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
@@ -127,14 +131,10 @@ body {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Background gradient */
-.glass-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-}
-
-.dark .glass-bg {
+/* Background gradient - dark mode only */
+:root.dark .glass-bg {
   background: linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f0a1a 100%);
+  min-height: 100vh;
 }
 
 /* Large blurred floating orbs */

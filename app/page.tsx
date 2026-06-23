@@ -207,11 +207,15 @@ export default function Home() {
   const glassBg = '#3b82f6';
 
   return (
-    <div className="relative min-h-screen font-sans glass-bg" style={{ color: textColor }}>
-      {/* 装饰性浮动光晕 */}
-      <div className="glass-orb" style={{ width: '400px', height: '400px', top: '-10%', left: '-5%', background: 'linear-gradient(135deg, rgba(102,126,234,0.3), rgba(118,75,162,0.1))', filter: 'blur(60px)', animation: 'float 20s ease-in-out infinite' }} />
-      <div className="glass-orb" style={{ width: '350px', height: '350px', top: '40%', right: '-8%', background: 'linear-gradient(135deg, rgba(118,75,162,0.25), rgba(246,211,101,0.08))', filter: 'blur(50px)', animation: 'float 25s ease-in-out infinite 5s' }} />
-      <div className="glass-orb" style={{ width: '300px', height: '300px', bottom: '5%', left: '10%', background: 'linear-gradient(135deg, rgba(102,126,234,0.2), rgba(246,211,101,0.05))', filter: 'blur(55px)', animation: 'float 22s ease-in-out infinite 10s' }} />
+    <div className="relative min-h-screen font-sans" style={{ backgroundColor: bgColor, color: textColor }}>
+      {/* Floating orbs - only in dark mode */}
+      {isDarkMode && (
+        <>
+          <div className="glass-orb" style={{ width: '400px', height: '400px', top: '-10%', left: '-5%', background: 'linear-gradient(135deg, rgba(102,126,234,0.3), rgba(118,75,162,0.1))', filter: 'blur(60px)', animation: 'float 20s ease-in-out infinite' }} />
+          <div className="glass-orb" style={{ width: '350px', height: '350px', top: '40%', right: '-8%', background: 'linear-gradient(135deg, rgba(118,75,162,0.25), rgba(246,211,101,0.08))', filter: 'blur(50px)', animation: 'float 25s ease-in-out infinite 5s' }} />
+          <div className="glass-orb" style={{ width: '300px', height: '300px', bottom: '5%', left: '10%', background: 'linear-gradient(135deg, rgba(102,126,234,0.2), rgba(246,211,101,0.05))', filter: 'blur(55px)', animation: 'float 22s ease-in-out infinite 10s' }} />
+        </>
+      )}
 
       <header
         className="sticky top-0 z-50"
